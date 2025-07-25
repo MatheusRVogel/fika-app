@@ -4,10 +4,6 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -28,11 +24,17 @@
       "dest": "/landing.html"
     },
     {
+      "src": "/(.*\\.(css|js|html|svg|json|png|jpg|jpeg|gif|ico))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/server.js"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
+  "functions": {
+    "server.js": {
+      "maxDuration": 10
+    }
   }
 }
