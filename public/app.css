@@ -103,6 +103,9 @@
     --primary-color: #ff4458;
     --primary-dark: #e63946;
     --secondary-color: #6c5ce7;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
     --background: #ffffff;
     --surface: #f8f9fa;
     --surface-dark: #ffffff;
@@ -2340,6 +2343,156 @@ input:checked + .theme-slider:before {
 .publish-btn:not(:disabled):hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
+}
+
+/* Explore card actions */
+.explore-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.explore-card-actions button {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.explore-card-actions button:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.explore-card-actions .btn-like.liked {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.explore-card-actions .btn-super-like:hover {
+    background: #FFD700;
+    color: #000;
+    border-color: #FFD700;
+}
+
+.explore-card-actions .btn-message:hover {
+    background: var(--success-color);
+    border-color: var(--success-color);
+}
+
+/* Usage counters */
+.usage-counters {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.usage-counters h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.usage-counter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+.usage-counter:last-child {
+    margin-bottom: 0;
+}
+
+.usage-counter .label {
+    color: var(--text-secondary);
+}
+
+.usage-counter .count {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.usage-counter .count.warning {
+    color: var(--warning-color);
+}
+
+.usage-counter .count.danger {
+    color: var(--error-color);
+}
+
+/* Estilos para contadores individuais */
+.likes-counter,
+.super-likes-counter,
+.conversations-counter {
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.likes-counter.warning,
+.super-likes-counter.warning,
+.conversations-counter.warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.likes-counter.success,
+.super-likes-counter.success,
+.conversations-counter.success {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: var(--success-color);
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .usage-counters {
+        top: 70px;
+        right: 10px;
+        min-width: 180px;
+        padding: 10px;
+    }
+    
+    .explore-card-actions {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .explore-card-actions button {
+        padding: 10px;
+        font-size: 13px;
+    }
 }
 
 /* Utility Classes */

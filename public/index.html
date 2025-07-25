@@ -104,7 +104,15 @@
                 </div>
             </header>
 
-            <!-- Main Content -->
+            <!-- Usage Counters (for non-premium users) -->
+        <div id="usage-counters" class="usage-counters" style="display: none;">
+            <h4>Uso Diário</h4>
+            <div class="likes-counter">0 curtidas restantes</div>
+            <div class="super-likes-counter">0 super likes restantes</div>
+            <div class="conversations-counter">0 conversas restantes</div>
+        </div>
+
+        <!-- Main Content -->
             <main class="app-main">
                 <!-- Home Screen -->
                 <div id="home-screen" class="screen active">
@@ -456,6 +464,7 @@
                 const scripts = [
                     'https://js.stripe.com/v3/',
                     'stripe-config.js',
+                    'premium-manager.js',
                     'fika-api.js',
                     'app.js'
                 ];

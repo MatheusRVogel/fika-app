@@ -132,6 +132,65 @@ const userService = {
             console.error('Erro ao buscar usuários:', error);
             throw error;
         }
+    },
+
+    // Atualizar status premium do usuário
+    async updatePremiumStatus(userId, isPremium) {
+        try {
+            const updates = {
+                is_premium: isPremium,
+                premium_updated_at: new Date().toISOString()
+            };
+
+            if (isPremium) {
+                updates.premium_started_at = new Date().toISOString();
+            }
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', userId);
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('Erro ao atualizar status premium:', error);
+            throw error;
+        }
+    },
+
+    // Verificar se usuário é premium
+    async isPremiumUser(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('is_premium')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            return data?.is_premium || false;
+        } catch (error) {
+            console.error('Erro ao verificar status premium:', error);
+            return false;
+        }
+    },
+
+    // Buscar usuário pelo customer_id do Stripe
+    async getUserByCustomerId(customerId) {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('stripe_customer_id', customerId)
+                .single();
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('Erro ao buscar usuário por customer ID:', error);
+            throw error;
+        }
     }
 };
 

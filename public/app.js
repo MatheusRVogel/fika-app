@@ -8,6 +8,7 @@ class FikahApp {
         this.chats = [];
         this.notifications = [];
         this.exploreUsers = [];
+        this.premiumManager = new PremiumManager();
         
         this.init();
     }
@@ -21,6 +22,9 @@ class FikahApp {
         
         // Load current user
         await this.loadCurrentUser();
+        
+        // Initialize premium status
+        await this.initializePremiumStatus();
         
         // Initialize data
         await this.loadInitialData();
@@ -69,6 +73,102 @@ class FikahApp {
         } catch (error) {
             console.error('❌ Erro ao carregar usuário:', error);
             window.location.href = 'login.html';
+        }
+    }
+
+    async initializePremiumStatus() {
+        try {
+            if (this.currentUser) {
+                // Verificar status premium via API
+                const subscriptionStatus = await PaymentService.getSubscriptionStatus();
+                const isPremium = subscriptionStatus?.isPremium || false;
+                
+                // Atualizar premium manager
+                this.premiumManager.setPremiumStatus(isPremium);
+                
+                // Atualizar interface baseada no status premium
+                this.updatePremiumInterface(isPremium);
+                
+                console.log('✅ Status premium inicializado:', isPremium ? 'Premium' : 'Gratuito');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao inicializar status premium:', error);
+            // Em caso de erro, assumir usuário gratuito
+            this.premiumManager.setPremiumStatus(false);
+        }
+    }
+
+    updatePremiumInterface(isPremium) {
+        // Atualizar botão premium
+        const premiumBtn = document.getElementById('premium-btn');
+        if (premiumBtn) {
+            if (isPremium) {
+                premiumBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>Premium ⭐</span>
+                `;
+                premiumBtn.classList.add('premium-active');
+            } else {
+                premiumBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>Premium</span>
+                `;
+                premiumBtn.classList.remove('premium-active');
+            }
+        }
+
+        // Mostrar/ocultar funcionalidades premium
+        const premiumFeatures = document.querySelectorAll('.premium-feature');
+        premiumFeatures.forEach(feature => {
+            if (isPremium) {
+                feature.classList.remove('locked');
+            } else {
+                feature.classList.add('locked');
+            }
+        });
+
+        // Sempre atualizar contadores de uso (mostra/oculta baseado no status premium)
+        this.updateUsageCounters();
+    }
+
+    updateUsageCounters() {
+        const stats = this.premiumManager.getUsageStats();
+        const usageCounters = document.getElementById('usage-counters');
+        
+        if (!usageCounters) return;
+        
+        if (stats.isPremium) {
+            // Ocultar contadores para usuários premium
+            usageCounters.style.display = 'none';
+            return;
+        }
+        
+        // Mostrar contadores para usuários não premium
+        usageCounters.style.display = 'block';
+        
+        // Atualizar contador de likes (agora ilimitado)
+        const likesCounter = document.querySelector('.likes-counter');
+        if (likesCounter) {
+            likesCounter.innerHTML = '<span class="counter-label">Curtidas:</span> <span class="counter-value">Ilimitadas ✓</span>';
+            likesCounter.className = 'usage-counter likes-counter success';
+        }
+
+        // Atualizar contador de super likes (agora ilimitado)
+        const superLikesCounter = document.querySelector('.super-likes-counter');
+        if (superLikesCounter) {
+            superLikesCounter.innerHTML = '<span class="counter-label">Super Likes:</span> <span class="counter-value">Ilimitados ✓</span>';
+            superLikesCounter.className = 'usage-counter super-likes-counter success';
+        }
+        
+        // Atualizar contador de conversas (apenas responder)
+        const conversationsCounter = document.querySelector('.conversations-counter');
+        if (conversationsCounter) {
+            conversationsCounter.innerHTML = '<span class="counter-label">Chats:</span> <span class="counter-value">Apenas responder</span>';
+            conversationsCounter.className = 'usage-counter conversations-counter warning';
         }
     }
 
@@ -648,6 +748,22 @@ class FikahApp {
         const text = messageInput.value.trim();
         if (!text) return;
 
+        // Para usuários não premium, verificar se é uma resposta ou nova conversa
+        // Se há mensagens no container, é uma resposta (permitida)
+        // Se não há mensagens, é uma nova conversa (bloqueada para usuários gratuitos)
+        if (!this.premiumManager.isPremium) {
+            const existingMessages = messagesContainer.querySelectorAll('.message');
+            if (existingMessages.length === 0) {
+                // Tentativa de iniciar nova conversa
+                const canStart = this.premiumManager.canStartConversation();
+                if (!canStart.allowed) {
+                    this.premiumManager.showUpgradeModal(canStart.reason, canStart.message);
+                    return;
+                }
+            }
+            // Se há mensagens existentes, é uma resposta - permitida para todos
+        }
+
         const message = {
             id: Date.now(),
             text: text,
@@ -657,15 +773,34 @@ class FikahApp {
 
         const messageElement = this.createMessageElement(message);
         messagesContainer.appendChild(messageElement);
-
-        // Clear input
+        
         messageInput.value = '';
-
-        // Scroll to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-        // Show notification
-        this.showNotification('Mensagem enviada!', 'success');
+        // Simulate response after 1-2 seconds
+        setTimeout(() => {
+            const responses = [
+                'Que legal! 😊',
+                'Concordo totalmente!',
+                'Haha, adorei!',
+                'Interessante ponto de vista',
+                'Vamos marcar algo em breve!',
+                'Obrigada por compartilhar isso'
+            ];
+            
+            const response = {
+                id: Date.now() + 1,
+                text: responses[Math.floor(Math.random() * responses.length)],
+                sent: false,
+                time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+            };
+            
+            const responseElement = this.createMessageElement(response);
+            messagesContainer.appendChild(responseElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 1000 + Math.random() * 1000);
+    }
     }
 
     setupProfile() {
@@ -873,14 +1008,119 @@ class FikahApp {
                 <div class="explore-card-tags">
                     ${user.interests.map(interest => `<span class="tag">${interest}</span>`).join('')}
                 </div>
+                <div class="explore-card-actions">
+                    <button class="btn-like ${user.liked ? 'liked' : ''}" data-user-id="${user.id}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        Like
+                    </button>
+                    <button class="btn-super-like" data-user-id="${user.id}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                        </svg>
+                        Super Like
+                    </button>
+                    <button class="btn-message" data-user-id="${user.id}">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Mensagem
+                    </button>
+                </div>
             </div>
         `;
 
+        // Add event listeners for actions
+        const likeBtn = userDiv.querySelector('.btn-like');
+        const superLikeBtn = userDiv.querySelector('.btn-super-like');
+        const messageBtn = userDiv.querySelector('.btn-message');
+
+        likeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleUserLike(user.id, likeBtn);
+        });
+
+        superLikeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleUserSuperLike(user.id, superLikeBtn);
+        });
+
+        messageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleUserMessage(user.id);
+        });
+
+        // Click on card to view profile
         userDiv.addEventListener('click', () => {
             this.showUserProfile(user);
         });
 
         return userDiv;
+    }
+
+    handleUserLike(userId, button) {
+        const user = this.exploreUsers.find(u => u.id === userId);
+        if (!user) return;
+
+        user.liked = !user.liked;
+        
+        if (user.liked) {
+            button.classList.add('liked');
+            button.style.color = 'var(--primary-color)';
+            this.showNotification(`Você curtiu ${user.name}!`, 'success');
+        } else {
+            button.classList.remove('liked');
+            button.style.color = '';
+            this.showNotification(`Você descurtiu ${user.name}`, 'info');
+        }
+    }
+
+    handleUserSuperLike(userId, button) {
+        const user = this.exploreUsers.find(u => u.id === userId);
+        if (!user) return;
+
+        // Efeito visual do super like
+        button.style.color = '#FFD700';
+        button.style.transform = 'scale(1.2)';
+        
+        setTimeout(() => {
+            button.style.transform = 'scale(1)';
+        }, 200);
+
+        this.showNotification(`Super Like enviado para ${user.name}! ⭐`, 'success');
+    }
+
+    handleUserMessage(userId) {
+        // Verificar se pode iniciar conversa
+        const canStartConversation = this.premiumManager.canStartConversation();
+        if (!canStartConversation.allowed) {
+            this.premiumManager.showUpgradeModal(canStartConversation.reason, canStartConversation.message);
+            return;
+        }
+
+        const user = this.exploreUsers.find(u => u.id === userId);
+        if (!user) return;
+
+        // Registrar nova conversa
+        this.premiumManager.recordNewConversation();
+
+        // Simular criação de nova conversa
+        const newChat = {
+            id: Date.now(),
+            name: user.name,
+            avatar: user.image,
+            lastMessage: 'Nova conversa iniciada',
+            time: 'agora',
+            unread: 0,
+            online: Math.random() > 0.5
+        };
+
+        this.chats.unshift(newChat);
+        this.renderChats();
+        
+        this.showNotification(`Conversa iniciada com ${user.name}!`, 'success');
+        this.navigateToScreen('messages');
     }
 
     showUserProfile(user) {

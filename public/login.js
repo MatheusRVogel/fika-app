@@ -1,42 +1,37 @@
-document.addEventListener('DOMContentLoaded', async function() {
-    // Elementos da interface
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const locationInput = document.getElementById('register-location');
-    const getLocationBtn = document.getElementById('get-location-btn');
-    
-    // Aguardar inicialização do Supabase
-    await new Promise(resolve => {
-        if (window.fikaSupabase) {
-            resolve();
-        } else {
-            setTimeout(resolve, 1000);
-        }
-    });
-    
-    // Verificar se já está logado
-    const currentUser = await window.fikaSupabase.getCurrentUser();
+// Aguardar o carregamento do DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do DOM
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginFormElement = document.getElementById('loginFormElement');
+    const registerFormElement = document.getElementById('registerFormElement');
+    const locationInput = document.getElementById('location');
+    const getLocationBtn = document.getElementById('getLocationBtn');
+
+    // Verificar se o usuário já está logado
+    const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
         window.location.href = '/app';
         return;
     }
-    
-    // Alternar entre formulários de login e cadastro
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            const tabId = this.dataset.tab;
-            if (tabId === 'login') {
-                loginForm.classList.add('active');
-                registerForm.classList.remove('active');
-            } else {
-                loginForm.classList.remove('active');
-                registerForm.classList.add('active');
-            }
-        });
+
+    // Função para alternar entre abas
+    function switchTab(activeTab, inactiveTab, activeForm, inactiveForm) {
+        activeTab.classList.add('active');
+        inactiveTab.classList.remove('active');
+        activeForm.style.display = 'block';
+        inactiveForm.style.display = 'none';
+    }
+
+    // Event listeners para as abas
+    loginTab.addEventListener('click', () => {
+        switchTab(loginTab, registerTab, loginForm, registerForm);
+    });
+
+    registerTab.addEventListener('click', () => {
+        switchTab(registerTab, loginTab, registerForm, loginForm);
     });
     
     // Função para obter localização automática
