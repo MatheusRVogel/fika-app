@@ -1191,14 +1191,28 @@ html {
 
 /* ===== ESTILOS DE LOGIN E CADASTRO ===== */
 
+/* Garantir que html e body ocupem toda a altura */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 /* Tela de autenticação */
 #auth-screen {
     background: linear-gradient(135deg, #ff4458, #ff6b7a);
     min-height: 100vh;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 #auth-screen .container {
@@ -1208,7 +1222,9 @@ html {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
-    margin: 0 auto;
+    margin: auto;
+    position: relative;
+    z-index: 1;
 }
 
 /* Logo na tela de login */
