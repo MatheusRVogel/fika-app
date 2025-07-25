@@ -415,9 +415,70 @@
         <div id="notifications-container" class="notifications-container"></div>
     </div>
 
-    <script src="https://js.stripe.com/v3/"></script>
-    <script src="stripe-config.js"></script>
-    <script src="fika-api.js"></script>
-    <script src="app.js"></script>
+    <!-- Supabase Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+    
+    <!-- Authentication Check -->
+    <script>
+        // Verificar autenticação antes de carregar o app
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔐 Verificando autenticação...');
+            
+            // Aguardar inicialização do Supabase
+            let attempts = 0;
+            const maxAttempts = 50; // 5 segundos máximo
+            
+            while (!window.fikaSupabase && attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (!window.fikaSupabase) {
+                console.error('❌ Supabase não foi inicializado');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const currentUser = await window.fikaSupabase.getCurrentUser();
+                
+                if (!currentUser) {
+                    console.log('❌ Usuário não autenticado, redirecionando para login');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                console.log('✅ Usuário autenticado:', currentUser.email);
+                
+                // Carregar scripts do app apenas se autenticado
+                const scripts = [
+                    'https://js.stripe.com/v3/',
+                    'stripe-config.js',
+                    'fika-api.js',
+                    'app.js'
+                ];
+                
+                for (const src of scripts) {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    document.body.appendChild(script);
+                    
+                    // Aguardar carregamento do script
+                    await new Promise((resolve, reject) => {
+                        script.onload = resolve;
+                        script.onerror = reject;
+                    });
+                }
+                
+                console.log('✅ Scripts do app carregados com sucesso');
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar autenticação:', error);
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
 </body>
 </html>

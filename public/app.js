@@ -16,6 +16,12 @@ class FikahApp {
         // Show loading screen
         this.showLoadingScreen();
         
+        // Wait for Supabase to be ready
+        await this.waitForSupabase();
+        
+        // Load current user
+        await this.loadCurrentUser();
+        
         // Initialize data
         await this.loadInitialData();
         
@@ -30,6 +36,54 @@ class FikahApp {
             this.hideLoadingScreen();
             this.showApp();
         }, 2000);
+    }
+
+    async waitForSupabase() {
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        while (!window.fikaSupabase && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.fikaSupabase) {
+            throw new Error('Supabase não foi inicializado');
+        }
+    }
+
+    async loadCurrentUser() {
+        try {
+            this.currentUser = await window.fikaSupabase.getCurrentUser();
+            
+            if (!this.currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            console.log('✅ Usuário carregado:', this.currentUser.email);
+            
+            // Atualizar interface com dados do usuário
+            this.updateUserInterface();
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar usuário:', error);
+            window.location.href = 'login.html';
+        }
+    }
+
+    updateUserInterface() {
+        // Atualizar nome do usuário no perfil
+        const profileName = document.querySelector('.profile-details h2');
+        if (profileName && this.currentUser) {
+            profileName.textContent = this.currentUser.name || this.currentUser.email;
+        }
+        
+        // Atualizar outros elementos da interface conforme necessário
+        const userElements = document.querySelectorAll('[data-user-name]');
+        userElements.forEach(element => {
+            element.textContent = this.currentUser.name || this.currentUser.email;
+        });
     }
 
     showLoadingScreen() {
@@ -627,8 +681,123 @@ class FikahApp {
         
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => {
-                this.showNotification('Configurações em desenvolvimento', 'info');
+                this.showSettingsModal();
             });
+        }
+    }
+
+    async showSettingsModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Configurações</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h4>Conta</h4>
+                        <div class="setting-item">
+                            <span>E-mail: ${this.currentUser?.email || 'Não informado'}</span>
+                        </div>
+                        <div class="setting-item">
+                            <span>Nome: ${this.currentUser?.name || 'Não informado'}</span>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h4>Privacidade</h4>
+                        <div class="setting-item">
+                            <span>Perfil público</span>
+                            <label class="theme-switch">
+                                <input type="checkbox" checked>
+                                <span class="theme-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Mostrar localização</span>
+                            <label class="theme-switch">
+                                <input type="checkbox" checked>
+                                <span class="theme-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h4>Notificações</h4>
+                        <div class="setting-item">
+                            <span>Novos matches</span>
+                            <label class="theme-switch">
+                                <input type="checkbox" checked>
+                                <span class="theme-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Mensagens</span>
+                            <label class="theme-switch">
+                                <input type="checkbox" checked>
+                                <span class="theme-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">
+                        Cancelar
+                    </button>
+                    <button class="btn-danger" id="logout-btn">
+                        Sair da Conta
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Adicionar event listener para logout
+        const logoutBtn = modal.querySelector('#logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await this.handleLogout();
+            });
+        }
+        
+        // Fechar modal ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    async handleLogout() {
+        try {
+            this.showNotification('Fazendo logout...', 'info');
+            
+            // Fazer logout no Supabase
+            if (window.fikaSupabase) {
+                await window.fikaSupabase.logoutUser();
+            }
+            
+            // Limpar dados locais
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            
+            this.showNotification('Logout realizado com sucesso!', 'success');
+            
+            // Redirecionar para login após um breve delay
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+            this.showNotification('Erro ao fazer logout. Tente novamente.', 'error');
         }
     }
 

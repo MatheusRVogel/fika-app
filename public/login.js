@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Elementos da interface
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
@@ -6,8 +6,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const locationInput = document.getElementById('register-location');
     const getLocationBtn = document.getElementById('get-location-btn');
     
+    // Aguardar inicialização do Supabase
+    await new Promise(resolve => {
+        if (window.fikaSupabase) {
+            resolve();
+        } else {
+            setTimeout(resolve, 1000);
+        }
+    });
+    
     // Verificar se já está logado
-    if (localStorage.getItem('isLoggedIn') === 'true') {
+    const currentUser = await window.fikaSupabase.getCurrentUser();
+    if (currentUser) {
         window.location.href = '/app';
         return;
     }
@@ -77,32 +87,75 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Submissão de formulários
     if (loginForm) {
-        loginForm.querySelector('form').addEventListener('submit', function(e) {
+        loginForm.querySelector('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
             
-            if (email && password) {
-                // Simulação de login bem-sucedido
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('showTrialModal', 'true');
-                window.location.href = '/app';
-            } else {
+            if (!email || !password) {
                 alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            // Mostrar loading
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Entrando...';
+            submitBtn.disabled = true;
+
+            try {
+                const result = await window.fikaSupabase.loginUser(email, password);
+                
+                if (result.user) {
+                    // Login bem-sucedido
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userId', result.user.id);
+                    localStorage.setItem('showTrialModal', 'true');
+                    
+                    if (result.user.user_metadata?.name) {
+                        localStorage.setItem('userName', result.user.user_metadata.name);
+                    }
+                    
+                    window.location.href = '/app';
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                let errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Email ou senha incorretos.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Por favor, confirme seu email antes de fazer login.';
+                } else if (error.message.includes('Too many requests')) {
+                    errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
+                }
+                
+                alert(errorMessage);
+            } finally {
+                // Restaurar botão
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
     }
     
     if (registerForm) {
-        registerForm.querySelector('form').addEventListener('submit', function(e) {
+        registerForm.querySelector('form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('register-name').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const birthdate = document.getElementById('register-birthdate').value;
             const location = document.getElementById('register-location').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
             
+            // Verificação de campos obrigatórios
+            if (!name || !email || !password || !birthdate || !location) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
             // Verificação de idade (18+)
             const today = new Date();
             const birthdateDate = new Date(birthdate);
@@ -117,16 +170,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Você deve ter pelo menos 18 anos para se cadastrar.');
                 return;
             }
-            
-            if (name && email && password && birthdate && location) {
-                // Simulação de cadastro bem-sucedido
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('userName', name);
-                localStorage.setItem('showTrialModal', 'true');
-                window.location.href = '/app';
-            } else {
-                alert('Por favor, preencha todos os campos obrigatórios.');
+
+            // Validação de senha
+            if (password.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
+
+            // Mostrar loading
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Cadastrando...';
+            submitBtn.disabled = true;
+
+            try {
+                const userData = {
+                    name,
+                    email,
+                    password,
+                    age,
+                    location,
+                    birthdate
+                };
+
+                const result = await window.fikaSupabase.registerUser(userData);
+                
+                if (result.user) {
+                    // Cadastro bem-sucedido
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userName', name);
+                    localStorage.setItem('userId', result.user.id);
+                    localStorage.setItem('showTrialModal', 'true');
+                    
+                    alert('Cadastro realizado com sucesso! Bem-vindo ao Fika!');
+                    window.location.href = '/app';
+                }
+            } catch (error) {
+                console.error('Erro no cadastro:', error);
+                let errorMessage = 'Erro ao criar conta. Tente novamente.';
+                
+                if (error.message.includes('User already registered')) {
+                    errorMessage = 'Este email já está cadastrado. Tente fazer login.';
+                } else if (error.message.includes('Password should be at least 6 characters')) {
+                    errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+                } else if (error.message.includes('Invalid email')) {
+                    errorMessage = 'Por favor, insira um email válido.';
+                } else if (error.message.includes('Email já cadastrado')) {
+                    errorMessage = 'Este email já está cadastrado. Tente fazer login.';
+                }
+                
+                alert(errorMessage);
+            } finally {
+                // Restaurar botão
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
     }
