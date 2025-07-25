@@ -778,53 +778,180 @@ class FikahApp {
         }
     }
 
-    showPremiumModal() {
+    async showPremiumModal() {
+        // Verificar status atual da assinatura
+        let subscriptionStatus = null;
+        try {
+            subscriptionStatus = await PaymentService.getSubscriptionStatus();
+        } catch (error) {
+            console.error('Erro ao verificar assinatura:', error);
+        }
+
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content premium-modal">
-                <div class="modal-header">
-                    <h2>FIKAH Premium</h2>
-                    <button class="close-modal">×</button>
+        
+        if (subscriptionStatus && subscriptionStatus.isPremium) {
+            // Usuário já é premium - mostrar gerenciamento de assinatura
+            modal.innerHTML = `
+                <div class="modal-content premium-modal">
+                    <div class="modal-header">
+                        <h2>FIKAH Premium ⭐</h2>
+                        <button class="close-modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="premium-status">
+                            <div class="status-badge active">
+                                <span class="status-icon">✅</span>
+                                <span>Assinatura Ativa</span>
+                            </div>
+                            ${subscriptionStatus.subscription ? `
+                                <div class="subscription-details">
+                                    <p><strong>Status:</strong> ${subscriptionStatus.subscription.status}</p>
+                                    <p><strong>Próxima cobrança:</strong> ${new Date(subscriptionStatus.subscription.current_period_end * 1000).toLocaleDateString('pt-BR')}</p>
+                                    ${subscriptionStatus.subscription.cancel_at_period_end ? 
+                                        '<p class="cancel-notice">⚠️ Sua assinatura será cancelada no final do período atual</p>' : 
+                                        ''
+                                    }
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="premium-features">
+                            <div class="feature-item active">
+                                <span class="feature-icon">⭐</span>
+                                <span>Curtidas ilimitadas</span>
+                            </div>
+                            <div class="feature-item active">
+                                <span class="feature-icon">🔥</span>
+                                <span>Super Likes diários</span>
+                            </div>
+                            <div class="feature-item active">
+                                <span class="feature-icon">👑</span>
+                                <span>Perfil em destaque</span>
+                            </div>
+                            <div class="feature-item active">
+                                <span class="feature-icon">📍</span>
+                                <span>Localização global</span>
+                            </div>
+                        </div>
+                        ${!subscriptionStatus.subscription?.cancel_at_period_end ? `
+                            <button class="cancel-subscription-btn">Cancelar Assinatura</button>
+                        ` : ''}
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <div class="premium-features">
-                        <div class="feature-item">
-                            <span class="feature-icon">⭐</span>
-                            <span>Curtidas ilimitadas</span>
+            `;
+        } else {
+            // Usuário não é premium - mostrar opções de assinatura
+            modal.innerHTML = `
+                <div class="modal-content premium-modal">
+                    <div class="modal-header">
+                        <h2>FIKAH Premium</h2>
+                        <button class="close-modal">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="premium-features">
+                            <div class="feature-item">
+                                <span class="feature-icon">⭐</span>
+                                <span>Curtidas ilimitadas</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">🔥</span>
+                                <span>Super Likes diários</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">👑</span>
+                                <span>Perfil em destaque</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">📍</span>
+                                <span>Localização global</span>
+                            </div>
                         </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">🔥</span>
-                            <span>Super Likes diários</span>
+                        
+                        <div class="premium-plans">
+                            <div class="plan-option" data-plan="monthly">
+                                <div class="plan-header">
+                                    <h3>Mensal</h3>
+                                    <div class="plan-price">
+                                        <span class="price">R$ 19,99</span>
+                                        <span class="period">/mês</span>
+                                    </div>
+                                </div>
+                                <p class="plan-desc">Cancele quando quiser</p>
+                                <button class="premium-btn-subscribe" data-plan="monthly">
+                                    Assinar Mensal
+                                </button>
+                            </div>
+                            
+                            <div class="plan-option recommended" data-plan="yearly">
+                                <div class="plan-badge">Mais Popular</div>
+                                <div class="plan-header">
+                                    <h3>Anual</h3>
+                                    <div class="plan-price">
+                                        <span class="price">R$ 199,99</span>
+                                        <span class="period">/ano</span>
+                                    </div>
+                                </div>
+                                <p class="plan-desc">Economize ~17% • R$ 16,66/mês</p>
+                                <button class="premium-btn-subscribe primary" data-plan="yearly">
+                                    Assinar Anual
+                                </button>
+                            </div>
                         </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">👑</span>
-                            <span>Perfil em destaque</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">📍</span>
-                            <span>Localização global</span>
+                        
+                        <div class="premium-footer">
+                            <p class="terms">Ao assinar, você concorda com nossos <a href="#" target="_blank">Termos de Uso</a></p>
                         </div>
                     </div>
-                    <div class="premium-price">
-                        <span class="price">R$ 19,90/mês</span>
-                        <span class="price-desc">Cancele quando quiser</span>
-                    </div>
-                    <button class="premium-btn-subscribe">Assinar Premium</button>
                 </div>
-            </div>
-        `;
+            `;
+        }
         
         document.body.appendChild(modal);
         
+        // Event listeners
         modal.querySelector('.close-modal').addEventListener('click', () => {
             modal.remove();
         });
         
-        modal.querySelector('.premium-btn-subscribe').addEventListener('click', () => {
-            this.showNotification('Redirecionando para pagamento...', 'success');
-            modal.remove();
+        // Botões de assinatura
+        modal.querySelectorAll('.premium-btn-subscribe').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const planType = e.target.dataset.plan;
+                btn.disabled = true;
+                btn.textContent = 'Processando...';
+                
+                try {
+                    await PaymentService.redirectToCheckout(planType);
+                } catch (error) {
+                    console.error('Erro no checkout:', error);
+                    btn.disabled = false;
+                    btn.textContent = planType === 'monthly' ? 'Assinar Mensal' : 'Assinar Anual';
+                    PaymentService.showPaymentError('Erro ao processar pagamento. Tente novamente.');
+                }
+            });
         });
+        
+        // Botão de cancelar assinatura
+        const cancelBtn = modal.querySelector('.cancel-subscription-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', async () => {
+                if (confirm('Tem certeza que deseja cancelar sua assinatura? Você manterá o acesso até o final do período atual.')) {
+                    cancelBtn.disabled = true;
+                    cancelBtn.textContent = 'Cancelando...';
+                    
+                    try {
+                        await PaymentService.cancelSubscription();
+                        PaymentService.showPaymentSuccess('Assinatura cancelada com sucesso');
+                        modal.remove();
+                    } catch (error) {
+                        console.error('Erro ao cancelar:', error);
+                        cancelBtn.disabled = false;
+                        cancelBtn.textContent = 'Cancelar Assinatura';
+                        PaymentService.showPaymentError('Erro ao cancelar assinatura. Tente novamente.');
+                    }
+                }
+            });
+        }
         
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {

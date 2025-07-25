@@ -5,8 +5,8 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
 
-const supabaseService = require('./supabase-service');
-const stripeService = require('./stripe-service');
+const supabaseService = require('./public/supabase-service');
+const stripeService = require('./public/stripe-service');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -215,73 +215,9 @@ app.get('/api/messages/:userId/:otherUserId', async (req, res) => {
   }
 });
 
-// API Routes - Stripe/Premium
-app.get('/api/stripe/config', (req, res) => {
-  res.json({
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
-  });
-});
-
-app.post('/api/stripe/create-checkout-session', async (req, res) => {
-  try {
-    const { userId, priceId, successUrl, cancelUrl } = req.body;
-    
-    if (!userId || !priceId) {
-      return res.status(400).json({ error: 'UserId e priceId são obrigatórios' });
-    }
-
-    const session = await stripeService.createCheckoutSession(
-      userId, 
-      priceId, 
-      successUrl || `${req.headers.origin}/app?premium=success`,
-      cancelUrl || `${req.headers.origin}/app?premium=cancel`
-    );
-    
-    res.json({ sessionId: session.id, url: session.url });
-  } catch (error) {
-    console.error('Erro ao criar sessão de checkout:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-app.get('/api/stripe/subscription-status/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const status = await stripeService.getSubscriptionStatus(userId);
-    res.json(status);
-  } catch (error) {
-    console.error('Erro ao verificar status da assinatura:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-app.post('/api/stripe/cancel-subscription', async (req, res) => {
-  try {
-    const { userId } = req.body;
-    
-    if (!userId) {
-      return res.status(400).json({ error: 'UserId é obrigatório' });
-    }
-
-    const result = await stripeService.cancelSubscription(userId);
-    res.json(result);
-  } catch (error) {
-    console.error('Erro ao cancelar assinatura:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Webhook do Stripe
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  try {
-    const sig = req.headers['stripe-signature'];
-    const result = await stripeService.handleWebhook(req.body, sig);
-    res.json(result);
-  } catch (error) {
-    console.error('Erro no webhook:', error);
-    res.status(400).json({ error: 'Webhook error' });
-  }
-});
+// API Routes - Stripe (importar rotas do arquivo separado)
+const stripeRoutes = require('./api/stripe');
+app.use('/api', stripeRoutes);
 
 // API Routes - Health Check
 app.get('/api/health', (req, res) => {
@@ -297,7 +233,7 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     res.status(404).json({ error: 'API endpoint não encontrado' });
   } else {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
   }
 });
 

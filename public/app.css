@@ -2201,3 +2201,148 @@ body:has(#home-screen.active) .create-post-btn {
 .transition {
     transition: var(--transition);
 }
+
+/* Premium Modal - Stripe Integration */
+.subscription-status {
+    background: var(--surface-dark);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.status-active {
+    border-left-color: #10b981;
+}
+
+.status-inactive {
+    border-left-color: #f59e0b;
+}
+
+.status-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.status-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.plan-selector {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.plan-option {
+    flex: 1;
+    background: var(--surface);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.plan-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.plan-option.selected {
+    border-color: var(--primary-color);
+    background: rgba(255, 68, 88, 0.05);
+}
+
+.plan-badge {
+    position: absolute;
+    top: -8px;
+    right: 16px;
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.plan-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.plan-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.plan-period {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.plan-savings {
+    color: #10b981;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.subscription-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.btn-manage {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-manage:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

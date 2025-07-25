@@ -169,15 +169,15 @@ class FikaStripe {
     }
 
     async initStripe() {
-        if (window.Stripe) {
-            // Buscar chave pública do backend
+        if (window.Stripe && window.STRIPE_CONFIG) {
             try {
-                const response = await fetch('/api/stripe/config');
-                const { publishableKey } = await response.json();
-                this.stripe = Stripe(publishableKey);
+                this.stripe = Stripe(window.STRIPE_CONFIG.publishableKey);
+                console.log('✅ Stripe inicializado com sucesso');
             } catch (error) {
                 console.error('Erro ao inicializar Stripe:', error);
             }
+        } else {
+            console.warn('Stripe ou configuração não disponível');
         }
     }
 
