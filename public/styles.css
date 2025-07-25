@@ -1196,6 +1196,9 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* Tela de autenticação */
@@ -1204,6 +1207,7 @@ html, body {
     min-height: 100vh;
     height: auto;
     width: 100%;
+    max-width: 100vw;
     position: relative;
     display: flex;
     align-items: center;
@@ -1211,6 +1215,7 @@ html, body {
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #auth-screen .container {
@@ -1225,6 +1230,7 @@ html, body {
     z-index: 1;
     max-height: 90vh;
     overflow-y: auto;
+    box-sizing: border-box;
 }
 
 /* Logo na tela de login */
@@ -1255,6 +1261,8 @@ html, body {
     border-radius: 12px;
     padding: 4px;
     margin-bottom: 25px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .tab-btn {
@@ -1268,6 +1276,7 @@ html, body {
     color: var(--gray-color);
     cursor: pointer;
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .tab-btn.active {
@@ -1279,6 +1288,8 @@ html, body {
 /* Container dos formulários */
 .form-container {
     display: none;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-container.active {
@@ -1288,6 +1299,8 @@ html, body {
 /* Grupos de formulário */
 .form-group {
     margin-bottom: 18px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-group label {

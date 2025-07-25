@@ -1,14 +1,12 @@
 // Aguardar o carregamento do DOM
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const loginFormElement = document.getElementById('loginFormElement');
-    const registerFormElement = document.getElementById('registerFormElement');
-    const locationInput = document.getElementById('location');
-    const getLocationBtn = document.getElementById('getLocationBtn');
+    const loginTab = document.querySelector('[data-tab="login"]');
+    const registerTab = document.querySelector('[data-tab="register"]');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const locationInput = document.getElementById('register-location');
+    const getLocationBtn = document.getElementById('get-location-btn');
 
     // Verificar se o usuário já está logado
     const currentUser = localStorage.getItem('currentUser');
@@ -21,18 +19,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function switchTab(activeTab, inactiveTab, activeForm, inactiveForm) {
         activeTab.classList.add('active');
         inactiveTab.classList.remove('active');
-        activeForm.style.display = 'block';
-        inactiveForm.style.display = 'none';
+        activeForm.classList.add('active');
+        inactiveForm.classList.remove('active');
     }
 
     // Event listeners para as abas
-    loginTab.addEventListener('click', () => {
-        switchTab(loginTab, registerTab, loginForm, registerForm);
-    });
+    if (loginTab && registerTab && loginForm && registerForm) {
+        loginTab.addEventListener('click', () => {
+            switchTab(loginTab, registerTab, loginForm, registerForm);
+        });
 
-    registerTab.addEventListener('click', () => {
-        switchTab(registerTab, loginTab, registerForm, loginForm);
-    });
+        registerTab.addEventListener('click', () => {
+            switchTab(registerTab, loginTab, registerForm, loginForm);
+        });
+    }
     
     // Função para obter localização automática
     if (getLocationBtn) {

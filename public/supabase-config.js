@@ -1,12 +1,10 @@
 // Configuração do Supabase
-// Para usar o Supabase real, substitua as configurações abaixo pelas suas
+// Para desenvolvimento local, usando configuração mock
 
 const SUPABASE_CONFIG = {
-    // Substitua pela URL do seu projeto Supabase
-    url: 'https://your-project.supabase.co',
-    
-    // Substitua pela chave anônima do seu projeto Supabase
-    anonKey: 'your-anon-key-here',
+    // Configuração mock para desenvolvimento local
+    url: 'https://mock-project.supabase.co',
+    anonKey: 'mock-anon-key-for-development',
     
     // Configurações opcionais
     options: {
@@ -20,6 +18,66 @@ const SUPABASE_CONFIG = {
 
 // Exportar configuração para uso global
 window.SUPABASE_CONFIG = SUPABASE_CONFIG;
+
+// Mock do Supabase para desenvolvimento local
+window.supabase = {
+    auth: {
+        signUp: async (credentials) => {
+            // Simular cadastro bem-sucedido
+            const user = {
+                id: 'user_' + Date.now(),
+                email: credentials.email,
+                user_metadata: credentials.options?.data || {}
+            };
+            
+            // Salvar no localStorage para persistência
+            const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
+            
+            // Verificar se email já existe
+            if (users.find(u => u.email === credentials.email)) {
+                throw new Error('User already registered');
+            }
+            
+            users.push(user);
+            localStorage.setItem('fika_users', JSON.stringify(users));
+            
+            return { data: { user }, error: null };
+        },
+        
+        signInWithPassword: async (credentials) => {
+            // Simular login
+            const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
+            const user = users.find(u => u.email === credentials.email);
+            
+            if (!user) {
+                throw new Error('Invalid login credentials');
+            }
+            
+            return { data: { user }, error: null };
+        },
+        
+        signOut: async () => {
+            return { error: null };
+        },
+        
+        getUser: async () => {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                return { data: { user: JSON.parse(currentUser) }, error: null };
+            }
+            return { data: { user: null }, error: null };
+        }
+    },
+    
+    from: (table) => ({
+        insert: async (data) => ({ data, error: null }),
+        select: async () => ({ data: [], error: null }),
+        update: async (data) => ({ data, error: null }),
+        delete: async () => ({ data: null, error: null })
+    })
+};
+
+console.log('Supabase mock configurado para desenvolvimento local');
 
 // Instruções para configuração:
 /*

@@ -10,11 +10,16 @@ body {
     line-height: 1.6;
     color: #333;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
 }
 
 .landing-container {
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -31,6 +36,9 @@ body {
     align-items: center;
     z-index: 1000;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
 }
 
 .logo {
@@ -40,6 +48,7 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    white-space: nowrap;
 }
 
 .header-nav {
@@ -53,6 +62,7 @@ body {
     font-weight: 500;
     transition: color 0.3s ease;
     position: relative;
+    white-space: nowrap;
 }
 
 .header-nav a:hover {
@@ -77,6 +87,7 @@ body {
 .header-buttons {
     display: flex;
     gap: 1rem;
+    flex-shrink: 0;
 }
 
 .btn-login, .btn-signup {
@@ -85,6 +96,8 @@ body {
     border-radius: 50px;
     font-weight: 600;
     transition: all 0.3s ease;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .btn-login {
@@ -121,6 +134,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .hero-content h1 {
@@ -129,6 +144,7 @@ body {
     color: white;
     margin-bottom: 1.5rem;
     line-height: 1.2;
+    word-wrap: break-word;
 }
 
 .hero-content p {
@@ -152,6 +168,8 @@ body {
     backdrop-filter: blur(20px);
     border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .btn-start:hover {
@@ -165,10 +183,13 @@ body {
     display: flex;
     gap: 2rem;
     margin-top: 3rem;
+    flex-wrap: wrap;
 }
 
 .stat {
     text-align: center;
+    flex: 1;
+    min-width: 100px;
 }
 
 .stat-number {
@@ -198,6 +219,8 @@ body {
     padding: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     position: relative;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Mobile Menu Toggle */
@@ -221,6 +244,7 @@ body {
     .hero {
         padding: 6rem 2rem 3rem;
         gap: 3rem;
+        max-width: 100%;
     }
     
     .hero-content h1 {
@@ -231,11 +255,16 @@ body {
         width: 250px;
         height: 500px;
     }
+    
+    .landing-header {
+        padding: 1rem 1.5rem;
+    }
 }
 
 @media (max-width: 768px) {
     .landing-header {
         padding: 1rem;
+        flex-wrap: nowrap;
     }
     
     .header-nav {
@@ -248,6 +277,7 @@ body {
     
     .header-buttons {
         gap: 0.5rem;
+        flex-shrink: 0;
     }
     
     .btn-login, .btn-signup {
@@ -264,6 +294,7 @@ body {
         padding: 6rem 1.5rem 3rem;
         gap: 2rem;
         text-align: center;
+        max-width: 100%;
     }
     
     .hero-content h1 {
@@ -280,6 +311,12 @@ body {
         gap: 1.5rem;
         justify-content: center;
         margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat {
+        flex: 1;
+        min-width: 100px;
     }
     
     .stat-number {
@@ -354,6 +391,23 @@ body {
 }
 
 @media (max-width: 360px) {
+    .landing-header {
+        padding: 0.5rem;
+    }
+    
+    .logo {
+        font-size: 1.2rem;
+    }
+    
+    .btn-login, .btn-signup {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    
+    .hero {
+        padding: 4.5rem 0.75rem 1.5rem;
+    }
+    
     .hero-content h1 {
         font-size: 1.8rem;
     }
@@ -367,12 +421,27 @@ body {
         font-size: 0.95rem;
     }
     
+    .hero-stats {
+        gap: 0.75rem;
+    }
+    
+    .stat {
+        min-width: 70px;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
     .phone-mockup {
         width: 160px;
         height: 320px;
         padding: 10px;
     }
-}
 }
 
 .phone-screen {
