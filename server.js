@@ -307,12 +307,14 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📱 App: http://localhost:${PORT}/app`);
-  console.log(`🔐 Login: http://localhost:${PORT}/login`);
-  console.log(`🏠 Landing: http://localhost:${PORT}/`);
-});
+// Iniciar servidor apenas em desenvolvimento local
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📱 App: http://localhost:${PORT}/app`);
+    console.log(`🔐 Login: http://localhost:${PORT}/login`);
+    console.log(`🏠 Landing: http://localhost:${PORT}/`);
+  });
+}
 
 module.exports = app;
