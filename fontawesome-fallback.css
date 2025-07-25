@@ -1,0 +1,113 @@
+/* Font Awesome Fallback Icons - Modern & Minimalist */
+/* Removendo dependências externas para evitar erros de carregamento */
+
+.fa, .fas, .far, .fab, .fal, .fad {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+    font-weight: normal !important;
+    display: inline-block !important;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+}
+
+.far {
+    font-weight: normal !important;
+}
+
+/* Modern minimalist fallback icons */
+.fa-home::before { content: "⌂" !important; }
+.fa-search::before { content: "⌕" !important; }
+.fa-heart::before { content: "♡" !important; }
+.fa-comment::before { content: "◐" !important; }
+.fa-share::before { content: "↗" !important; }
+.fa-bookmark::before { content: "⌘" !important; }
+.fa-user::before { content: "⚬" !important; }
+.fa-plus::before { content: "+" !important; }
+.fa-times::before { content: "×" !important; }
+.fa-crown::before { content: "♔" !important; }
+.fa-star::before { content: "★" !important; }
+.fa-sparkles::before { content: "✦" !important; }
+.fa-water::before { content: "~" !important; }
+.fa-unlock::before { content: "⊙" !important; }
+.fa-bell::before { content: "◔" !important; }
+.fa-cog::before { content: "⚙" !important; }
+.fa-camera::before { content: "◎" !important; }
+.fa-map-marker-alt::before { content: "◉" !important; }
+.fa-chevron-down::before { content: "⌄" !important; }
+.fa-ellipsis-h::before { content: "⋯" !important; }
+.fa-ellipsis-v::before { content: "⋮" !important; }
+.fa-location-arrow::before { content: "↗" !important; }
+.fa-globe::before { content: "◐" !important; }
+.fa-smile::before { content: "◡" !important; }
+.fa-sliders-h::before { content: "≡" !important; }
+.fa-edit::before { content: "✎" !important; }
+.fa-lock::before { content: "⊗" !important; }
+.fa-plus-circle::before { content: "⊕" !important; }
+.fa-image::before { content: "▢" !important; }
+.fa-arrow-left::before { content: "←" !important; }
+.fa-arrow-right::before { content: "→" !important; }
+.fa-font::before { content: "A" !important; }
+.fa-check::before { content: "✓" !important; }
+.fa-paper-plane::before { content: "▷" !important; }
+.fa-paperclip::before { content: "◈" !important; }
+.fa-flag::before { content: "⚑" !important; }
+.fa-ban::before { content: "⊘" !important; }
+.fa-link::before { content: "⧉" !important; }
+.fa-shield-alt::before { content: "◈" !important; }
+.fa-users::before { content: "⚬⚬" !important; }
+.fa-brain::before { content: "◉" !important; }
+.fa-video::before { content: "▶" !important; }
+.fa-message::before { content: "◐" !important; }
+
+/* Social media icons */
+.fab.fa-google::before { content: "G" !important; }
+.fab.fa-apple::before { content: "" !important; }
+.fab.fa-instagram::before { content: "◎" !important; }
+.fab.fa-twitter::before { content: "◈" !important; }
+.fab.fa-facebook::before { content: "f" !important; }
+.fab.fa-linkedin::before { content: "in" !important; }
+
+/* Solid versions for liked/active states */
+.fas.fa-heart::before { content: "♥" !important; }
+.fas.fa-star::before { content: "★" !important; }
+.fas.fa-bookmark::before { content: "⌘" !important; }
+.fas.fa-home::before { content: "⌂" !important; }
+.fas.fa-search::before { content: "⌕" !important; }
+.fas.fa-comment::before { content: "●" !important; }
+.fas.fa-plus::before { content: "+" !important; }
+.fas.fa-crown::before { content: "♔" !important; }
+.fas.fa-bell::before { content: "●" !important; }
+.fas.fa-cog::before { content: "⚙" !important; }
+.fas.fa-camera::before { content: "●" !important; }
+.fas.fa-map-marker-alt::before { content: "◉" !important; }
+.fas.fa-ellipsis-h::before { content: "⋯" !important; }
+.fas.fa-ellipsis-v::before { content: "⋮" !important; }
+.fas.fa-location-arrow::before { content: "↗" !important; }
+.fas.fa-globe::before { content: "●" !important; }
+.fas.fa-smile::before { content: "●" !important; }
+.fas.fa-sliders-h::before { content: "≡" !important; }
+.fas.fa-edit::before { content: "✎" !important; }
+.fas.fa-lock::before { content: "●" !important; }
+.fas.fa-plus-circle::before { content: "⊕" !important; }
+.fas.fa-image::before { content: "■" !important; }
+.fas.fa-arrow-left::before { content: "←" !important; }
+.fas.fa-arrow-right::before { content: "→" !important; }
+.fas.fa-font::before { content: "A" !important; }
+.fas.fa-check::before { content: "✓" !important; }
+.fas.fa-paper-plane::before { content: "▶" !important; }
+.fas.fa-paperclip::before { content: "●" !important; }
+.fas.fa-flag::before { content: "⚑" !important; }
+.fas.fa-ban::before { content: "⊘" !important; }
+.fas.fa-link::before { content: "●" !important; }
+.fas.fa-shield-alt::before { content: "●" !important; }
+.fas.fa-users::before { content: "●●" !important; }
+.fas.fa-brain::before { content: "●" !important; }
+.fas.fa-video::before { content: "▶" !important; }
+.fas.fa-message::before { content: "●" !important; }
+
+/* Far (outline) versions */
+.far.fa-heart::before { content: "♡" !important; }
+.far.fa-comment::before { content: "◐" !important; }
+.far.fa-smile::before { content: "◡" !important; }
+.far.fa-paper-plane::before { content: "▷" !important; }

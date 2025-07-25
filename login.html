@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIKA - Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Tela de Login/Cadastro -->
+        <div id="auth-screen" class="screen active">
+            <div class="container">
+                <div class="logo">
+                    <h1>FIKA</h1>
+                    <p>Encontros autênticos</p>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="register">Cadastro</button>
+                </div>
+                
+                <div id="login-form" class="form-container active">
+                    <form>
+                        <div class="form-group">
+                            <label for="login-email">E-mail</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Senha</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Entrar</button>
+                        <div class="social-login">
+                            <button type="button" class="btn btn-google">
+                                <i class="fab fa-google"></i> Entrar com Google
+                            </button>
+                            <button type="button" class="btn btn-apple">
+                                <i class="fab fa-apple"></i> Entrar com Apple
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div id="register-form" class="form-container">
+                    <form>
+                        <div class="form-group">
+                            <label for="register-name">Nome de exibição</label>
+                            <input type="text" id="register-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">E-mail</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Senha</label>
+                            <input type="password" id="register-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-birthdate">Data de nascimento</label>
+                            <input type="date" id="register-birthdate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-location">Localização</label>
+                            <div class="input-with-button">
+                                <input type="text" id="register-location" placeholder="Cidade/Estado" required>
+                                <button type="button" id="get-location-btn" class="btn btn-secondary">
+                                    <i class="fas fa-map-marker-alt"></i> Obter localização
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Tipo de relação buscada</label>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" name="relation-type" value="casual"> Sexo casual</label>
+                                <label><input type="checkbox" name="relation-type" value="trisal"> Trisal</label>
+                                <label><input type="checkbox" name="relation-type" value="swing"> Swing</label>
+                                <label><input type="checkbox" name="relation-type" value="friends"> Amizade com benefícios</label>
+                                <label><input type="checkbox" name="relation-type" value="open"> Namoro aberto</label>
+                                <label><input type="checkbox" name="relation-type" value="other"> Outros</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Interesses</label>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" name="interests" value="couples"> Casais</label>
+                                <label><input type="checkbox" name="interests" value="singles"> Solteiros(as)</label>
+                                <label><input type="checkbox" name="interests" value="hetero"> Héteros</label>
+                                <label><input type="checkbox" name="interests" value="bi"> Bissexuais</label>
+                                <label><input type="checkbox" name="interests" value="pan"> Pansexuais</label>
+                                <label><input type="checkbox" name="interests" value="trans"> Trans</label>
+                                <label><input type="checkbox" name="interests" value="nonbinary"> Não-binários</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>O que busca hoje</label>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" name="looking-for" value="chat"> Conversar</label>
+                                <label><input type="checkbox" name="looking-for" value="meet"> Encontrar</label>
+                                <label><input type="checkbox" name="looking-for" value="online"> Curtir online</label>
+                                <label><input type="checkbox" name="looking-for" value="photos"> Trocar fotos</label>
+                            </div>
+                        </div>
+                        
+
+                        
+                        <button type="submit" class="btn btn-primary">Cadastrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="login.js"></script>
+</body>
+</html>

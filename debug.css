@@ -1,0 +1,130 @@
+/* CSS DE DEBUG - FORÇAR VISIBILIDADE */
+
+/* Forçar visibilidade da tela home */
+#home-screen {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #f8f9fa !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+#home-screen.active {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Forçar visibilidade do header */
+.modern-header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    height: 60px !important;
+}
+
+/* Forçar visibilidade das stories */
+.stories-section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important;
+    padding: 16px 0 !important;
+    margin-top: 60px !important;
+    border-bottom: 1px solid #e1e8ed !important;
+}
+
+.stories-container {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    gap: 12px !important;
+    padding: 0 16px !important;
+    overflow-x: auto !important;
+}
+
+.story-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-width: 70px !important;
+}
+
+/* Forçar visibilidade dos posts */
+.posts-section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: #f8f9fa !important;
+    padding: 20px 0 !important;
+    min-height: 500px !important;
+}
+
+.posts-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
+}
+
+.modern-post {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: white !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e1e8ed !important;
+    overflow: visible !important;
+    max-width: 468px !important;
+    width: 100% !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.post-header,
+.post-content,
+.post-actions,
+.post-engagement {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.post-image {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 300px !important;
+    object-fit: cover !important;
+}
+
+/* Forçar visibilidade do rodapé */
+.bottom-nav {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: white !important;
+    z-index: 1000 !important;
+}
