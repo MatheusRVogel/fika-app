@@ -546,9 +546,9 @@
                 
                 console.log('✅ Supabase inicializado com sucesso');
                 
-                // Aguardar sessão ser estabelecida (importante após login)
-                console.log('⏳ Aguardando sessão ser estabelecida...');
-                const session = await supabaseClient.waitForSession(15); // 15 segundos máximo
+                // Verificar sessão atual
+                console.log('⏳ Verificando sessão atual...');
+                const session = await supabaseClient.getSession();
                 
                 if (!session) {
                     console.log('❌ Nenhuma sessão encontrada, redirecionando para login');
@@ -556,7 +556,9 @@
                     return;
                 }
                 
-                console.log('✅ Sessão encontrada, verificando usuário...');
+                console.log('✅ Sessão válida encontrada');
+                
+                // Verificar usuário
                 const currentUser = await supabaseClient.getCurrentUser();
                 
                 if (!currentUser || !currentUser.user) {
@@ -566,6 +568,7 @@
                 }
                 
                 console.log('✅ Usuário autenticado:', currentUser.user.email);
+                console.log('🚀 Carregando aplicação...');
                 
                 // Carregar scripts do app apenas se autenticado
                 const scripts = [
@@ -589,7 +592,8 @@
                         // Aguardar carregamento do script com timeout
                         await new Promise((resolve, reject) => {
                             const timeout = setTimeout(() => {
-                                reject(new Error(`Timeout ao carregar ${src}`));
+                                console.warn(`⚠️ Timeout ao carregar ${src}`);
+                                resolve(); // Continuar mesmo com timeout
                             }, 5000);
                             
                             script.onload = () => {
@@ -611,16 +615,20 @@
                 }
                 
                 console.log(`✅ ${scriptsLoaded}/${totalScripts} scripts carregados`);
+                console.log('🎉 Aplicação pronta para uso!');
                 
-                // Timeout de segurança apenas para garantir que o app.js execute
-                // Se o app.js não remover a tela de loading em 15 segundos, algo deu errado
+                // Timeout de segurança para garantir que o app.js execute
                 setTimeout(() => {
                     const loadingScreen = document.getElementById('loading-screen');
                     if (loadingScreen && loadingScreen.style.display !== 'none') {
-                        console.error('❌ App.js não removeu a tela de loading, redirecionando para login');
-                        window.location.href = 'login.html';
+                        console.warn('⚠️ App.js não removeu a tela de loading, removendo manualmente...');
+                        loadingScreen.style.display = 'none';
+                        const mainApp = document.getElementById('main-app');
+                        if (mainApp) {
+                            mainApp.classList.remove('hidden');
+                        }
                     }
-                }, 15000);
+                }, 10000); // 10 segundos
                 
             } catch (error) {
                 console.error('❌ Erro ao verificar autenticação:', error);

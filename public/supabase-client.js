@@ -89,6 +89,43 @@ async function initializeSupabaseNow() {
             const { data, error } = await client.auth.getSession();
             if (error) throw error;
             return data.session;
+        },
+        
+        // Aguardar sessão ser estabelecida (importante após login)
+        async waitForSession(timeoutSeconds = 15) {
+            console.log(`⏳ Aguardando sessão por ${timeoutSeconds} segundos...`);
+            
+            const startTime = Date.now();
+            const timeoutMs = timeoutSeconds * 1000;
+            
+            while (Date.now() - startTime < timeoutMs) {
+                try {
+                    const session = await this.getSession();
+                    if (session) {
+                        console.log('✅ Sessão encontrada!');
+                        return session;
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Erro ao verificar sessão:', error);
+                }
+                
+                // Aguardar 500ms antes de tentar novamente
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            console.log('❌ Timeout ao aguardar sessão');
+            return null;
+        },
+        
+        // Obter usuário atual (wrapper para compatibilidade)
+        async getCurrentUser() {
+            try {
+                const user = await this.getUser();
+                return { user };
+            } catch (error) {
+                console.error('❌ Erro ao obter usuário:', error);
+                return { user: null };
+            }
         }
     };
     
