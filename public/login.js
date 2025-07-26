@@ -1,34 +1,21 @@
-// Login Script - Versão Simplificada e Robusta
-console.log('🔐 Carregando login.js...');
+// Login.js - Versão Ultra Simplificada e Funcional
+console.log('🚀 Carregando login.js...');
 
-// Aguardar que tudo esteja carregado
+// Aguardar DOM carregar
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('📄 DOM carregado, iniciando login...');
+    console.log('📄 DOM carregado, inicializando login...');
     
     try {
         // Aguardar Supabase estar pronto
         console.log('⏳ Aguardando Supabase...');
+        const supabase = await window.waitForSupabaseReady(10000);
+        console.log('✅ Supabase pronto!');
         
-        // Aguardar função estar disponível
-        let attempts = 0;
-        while (!window.waitForSupabaseReady && attempts < 50) {
-            console.log(`⏳ Aguardando waitForSupabaseReady (${attempts + 1}/50)...`);
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-        }
+        // Configurar formulários
+        setupLoginForm(supabase);
+        setupTabs();
         
-        if (!window.waitForSupabaseReady) {
-            throw new Error('waitForSupabaseReady não está disponível');
-        }
-        
-        console.log('✅ waitForSupabaseReady disponível');
-        
-        // Aguardar Supabase estar pronto
-        const supabaseClient = await window.waitForSupabaseReady(15000);
-        console.log('✅ Supabase pronto para login');
-        
-        // Configurar formulário de login
-        setupLoginForm(supabaseClient);
+        console.log('✅ Login inicializado com sucesso!');
         
     } catch (error) {
         console.error('❌ Erro ao inicializar login:', error);
@@ -36,88 +23,57 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-function setupLoginForm(supabaseClient) {
+// Configurar formulário de login
+function setupLoginForm(supabase) {
     console.log('🔧 Configurando formulário de login...');
     
-    const loginForm = document.getElementById('loginForm');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
+    const loginForm = document.querySelector('#loginForm form');
     const loginButton = document.getElementById('loginButton');
-    const errorDiv = document.getElementById('error');
     
-    if (!loginForm || !emailInput || !passwordInput || !loginButton) {
-        console.error('❌ Elementos do formulário não encontrados');
-        showError('Erro na interface de login');
+    if (!loginForm) {
+        console.error('❌ Formulário de login não encontrado');
         return;
     }
     
-    console.log('✅ Elementos do formulário encontrados');
-    
-    // Remover loading
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-        loadingScreen.style.display = 'none';
-        console.log('✅ Tela de loading removida');
+    if (!loginButton) {
+        console.error('❌ Botão de login não encontrado');
+        return;
     }
     
-    // Configurar evento de submit
+    // Evento de submit do formulário
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        console.log('🔐 Tentativa de login iniciada...');
+        console.log('🔐 Tentativa de login...');
         
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
+        const email = document.getElementById('email')?.value;
+        const password = document.getElementById('password')?.value;
         
         if (!email || !password) {
-            showError('Por favor, preencha todos os campos');
+            showError('Por favor, preencha email e senha');
             return;
         }
         
-        // Mostrar loading
+        // Desabilitar botão
         loginButton.disabled = true;
         loginButton.textContent = 'Entrando...';
-        hideError();
         
         try {
-            console.log('🔑 Fazendo login com:', email);
+            // Fazer login
+            const result = await supabase.signIn(email, password);
+            console.log('✅ Login realizado:', result);
             
-            const { data, error } = await supabaseClient.client.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+            showSuccess('Login realizado com sucesso!');
             
-            if (error) {
-                console.error('❌ Erro no login:', error);
-                throw error;
-            }
-            
-            console.log('✅ Login realizado com sucesso');
-            console.log('👤 Usuário:', data.user?.email);
-            
-            // Aguardar um pouco para garantir que a sessão foi estabelecida
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Redirecionar para o app
-            console.log('🔄 Redirecionando para o app...');
-            window.location.href = 'index.html';
+            // Redirecionar após 1 segundo
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
             
         } catch (error) {
             console.error('❌ Erro no login:', error);
+            showError('Email ou senha incorretos');
             
-            let errorMessage = 'Erro ao fazer login';
-            
-            if (error.message.includes('Invalid login credentials')) {
-                errorMessage = 'Email ou senha incorretos';
-            } else if (error.message.includes('Email not confirmed')) {
-                errorMessage = 'Email não confirmado. Verifique sua caixa de entrada.';
-            } else if (error.message.includes('Too many requests')) {
-                errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
-            }
-            
-            showError(errorMessage);
-            
-        } finally {
-            // Restaurar botão
+            // Reabilitar botão
             loginButton.disabled = false;
             loginButton.textContent = 'Entrar';
         }
@@ -126,20 +82,88 @@ function setupLoginForm(supabaseClient) {
     console.log('✅ Formulário de login configurado');
 }
 
+// Configurar troca de abas
+function setupTabs() {
+    console.log('🔧 Configurando abas...');
+    
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    
+    if (loginTab) {
+        loginTab.addEventListener('click', () => switchTab('login'));
+    }
+    
+    if (registerTab) {
+        registerTab.addEventListener('click', () => switchTab('register'));
+    }
+    
+    console.log('✅ Abas configuradas');
+}
+
+// Trocar aba
+function switchTab(tab) {
+    console.log('🔄 Trocando para aba:', tab);
+    
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    
+    if (tab === 'login') {
+        // Mostrar login
+        if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
+        if (loginTab) loginTab.classList.add('active');
+        if (registerTab) registerTab.classList.remove('active');
+    } else {
+        // Mostrar registro
+        if (loginForm) loginForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'block';
+        if (loginTab) loginTab.classList.remove('active');
+        if (registerTab) registerTab.classList.add('active');
+    }
+    
+    // Limpar mensagens
+    clearMessages();
+}
+
+// Mostrar erro
 function showError(message) {
-    console.error('🚨 Erro:', message);
-    const errorDiv = document.getElementById('error');
+    console.error('❌ Erro:', message);
+    
+    const errorDiv = document.getElementById('errorMessage');
     if (errorDiv) {
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
+        errorDiv.style.color = 'red';
+        errorDiv.style.marginTop = '10px';
+    }
+    
+    // Esconder após 5 segundos
+    setTimeout(() => {
+        if (errorDiv) errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Mostrar sucesso
+function showSuccess(message) {
+    console.log('✅ Sucesso:', message);
+    
+    const errorDiv = document.getElementById('errorMessage');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.style.color = 'green';
+        errorDiv.style.marginTop = '10px';
     }
 }
 
-function hideError() {
-    const errorDiv = document.getElementById('error');
+// Limpar mensagens
+function clearMessages() {
+    const errorDiv = document.getElementById('errorMessage');
     if (errorDiv) {
         errorDiv.style.display = 'none';
     }
 }
 
-console.log('✅ login.js carregado completamente');
+console.log('✅ login.js carregado');
