@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FIKA - Login</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="fontawesome-fallback.css">
 </head>
 <body>
     <div id="app">
@@ -90,6 +91,17 @@
                         </div>
                         
                         <div class="form-group">
+                            <label>Preferências de gênero</label>
+                            <div class="checkbox-group">
+                                <label><input type="checkbox" name="gender-preferences" value="women"> Mulheres</label>
+                                <label><input type="checkbox" name="gender-preferences" value="men"> Homens</label>
+                                <label><input type="checkbox" name="gender-preferences" value="trans"> Trans</label>
+                                <label><input type="checkbox" name="gender-preferences" value="non-binary"> Não-binários</label>
+                                <label><input type="checkbox" name="gender-preferences" value="no-preference"> Sem preferência</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
                             <label>O que busca hoje</label>
                             <div class="checkbox-group">
                                 <label><input type="checkbox" name="looking-for" value="chat"> Conversar</label>
@@ -99,6 +111,15 @@
                             </div>
                         </div>
                         
+                        <div class="form-group">
+                            <div class="checkbox-single">
+                                <label>
+                                    <input type="checkbox" id="age-confirmation" required>
+                                    <span class="checkmark"></span>
+                                    Confirmo que sou maior de 18 anos
+                                </label>
+                            </div>
+                        </div>
 
                         
                         <button type="submit" class="btn btn-primary">Cadastrar</button>
@@ -108,6 +129,8 @@
         </div>
     </div>
     
+    <!-- Supabase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-client.js"></script>
     <script src="login.js"></script>

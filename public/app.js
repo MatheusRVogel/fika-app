@@ -58,12 +58,19 @@ class FikahApp {
 
     async loadCurrentUser() {
         try {
-            this.currentUser = await window.fikaSupabase.getCurrentUser();
+            const userResponse = await window.fikaSupabase.getCurrentUser();
             
-            if (!this.currentUser) {
+            if (!userResponse || !userResponse.user) {
                 window.location.href = 'login.html';
                 return;
             }
+            
+            // Extrair dados do usuário da estrutura correta
+            this.currentUser = {
+                email: userResponse.user.email,
+                name: userResponse.user.user_metadata?.name || userResponse.user.email,
+                id: userResponse.user.id
+            };
             
             console.log('✅ Usuário carregado:', this.currentUser.email);
             
@@ -184,6 +191,66 @@ class FikahApp {
         userElements.forEach(element => {
             element.textContent = this.currentUser.name || this.currentUser.email;
         });
+        
+        // Carregar e exibir preferências do usuário
+        this.loadUserPreferences();
+    }
+
+    async loadUserPreferences() {
+        if (!this.currentUser || !this.currentUser.id) return;
+        
+        try {
+            const userProfile = await window.fikaSupabase.getUserProfile(this.currentUser.id);
+            if (userProfile) {
+                this.displayUserPreferences(userProfile);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar preferências:', error);
+        }
+    }
+
+    displayUserPreferences(userProfile) {
+        // Exibir preferências de gênero
+        const genderPreferencesContainer = document.getElementById('gender-preferences');
+        if (genderPreferencesContainer) {
+            this.renderPreferenceTags(genderPreferencesContainer, userProfile.gender_preferences, 'Nenhuma preferência definida');
+        }
+
+        // Exibir tipos de relacionamento
+        const relationshipTypesContainer = document.getElementById('relationship-types');
+        if (relationshipTypesContainer) {
+            this.renderPreferenceTags(relationshipTypesContainer, userProfile.relationship_types, 'Nenhum tipo definido');
+        }
+
+        // Exibir interesses
+        const interestsContainer = document.getElementById('user-interests');
+        if (interestsContainer) {
+            this.renderPreferenceTags(interestsContainer, userProfile.interests, 'Nenhum interesse definido');
+        }
+
+        // Exibir o que busca hoje
+        const lookingForContainer = document.getElementById('looking-for');
+        if (lookingForContainer) {
+            this.renderPreferenceTags(lookingForContainer, userProfile.looking_for, 'Nada definido');
+        }
+    }
+
+    renderPreferenceTags(container, preferences, emptyMessage) {
+        container.innerHTML = '';
+        
+        if (!preferences || preferences.length === 0) {
+            const emptyTag = document.createElement('span');
+            emptyTag.className = 'preference-tag empty';
+            emptyTag.textContent = emptyMessage;
+            container.appendChild(emptyTag);
+        } else {
+            preferences.forEach(preference => {
+                const tag = document.createElement('span');
+                tag.className = 'preference-tag';
+                tag.textContent = preference;
+                container.appendChild(tag);
+            });
+        }
     }
 
     showLoadingScreen() {
@@ -704,21 +771,22 @@ class FikahApp {
         const messagesContainer = document.getElementById('messages-container');
         if (!messagesContainer) return;
 
-        // Mock messages
-        const messages = [
-            { id: 1, text: 'Oi! Como você está?', sent: false, time: '14:30', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' },
-            { id: 2, text: 'Oi! Estou bem, obrigado! E você?', sent: true, time: '14:32' },
-            { id: 3, text: 'Também estou bem! Que bom te ver por aqui 😊', sent: false, time: '14:33', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' },
-            { id: 4, text: 'Que tal nos encontrarmos para um café?', sent: true, time: '14:35' },
-            { id: 5, text: 'Adoraria! Quando você está livre?', sent: false, time: '14:36', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' }
-        ];
+        // No mock messages - empty chat
+        const messages = [];
 
         messagesContainer.innerHTML = '';
 
-        messages.forEach(message => {
-            const messageElement = this.createMessageElement(message);
-            messagesContainer.appendChild(messageElement);
-        });
+        if (messages.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-chat-message';
+            emptyMessage.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Nenhuma mensagem ainda. Comece a conversar!</p>';
+            messagesContainer.appendChild(emptyMessage);
+        } else {
+            messages.forEach(message => {
+                const messageElement = this.createMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+        }
 
         // Scroll to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -1487,173 +1555,19 @@ class FikahApp {
 
     // Mock Data Generators
     generateMockPosts() {
-        return [
-            {
-                id: 1,
-                name: 'Mariana Costa',
-                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-                location: 'Copacabana, Rio de Janeiro',
-                time: '2h',
-                image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
-                text: 'Aproveitando o fim de semana na praia! ☀️🌊 Quem mais ama esses momentos de paz?',
-                likes: 127,
-                comments: 15,
-                liked: false
-            },
-            {
-                id: 2,
-                name: 'Rafael Santos',
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-                location: 'Vila Madalena, São Paulo',
-                time: '4h',
-                image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&h=400&fit=crop',
-                text: 'Noite incrível com os amigos! 🎉 Vida noturna de SP é sempre surpreendente.',
-                likes: 89,
-                comments: 8,
-                liked: false
-            },
-            {
-                id: 3,
-                name: 'Ana Silva',
-                avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-                location: 'Ipanema, Rio de Janeiro',
-                time: '6h',
-                image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=400&fit=crop',
-                text: 'Café da manhã perfeito para começar o dia! ☕️✨ Quem mais é viciado em café?',
-                likes: 203,
-                comments: 24,
-                liked: false
-            }
-        ];
+        return [];
     }
 
     generateMockStories() {
-        return [
-            {
-                id: 1,
-                name: 'Ana',
-                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-                image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=600&fit=crop'
-            },
-            {
-                id: 2,
-                name: 'Carlos',
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-                image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=600&fit=crop'
-            },
-            {
-                id: 3,
-                name: 'Maria',
-                avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-                image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=600&fit=crop'
-            }
-        ];
+        return [];
     }
 
     generateMockChats() {
-        return [
-            {
-                id: 1,
-                name: 'Ana Silva',
-                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-                lastMessage: 'Oi! Como você está?',
-                time: '14:30',
-                unread: 2,
-                online: true
-            },
-            {
-                id: 2,
-                name: 'Carlos Mendes',
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-                lastMessage: 'Vamos nos encontrar hoje?',
-                time: '12:15',
-                unread: 0,
-                online: false
-            },
-            {
-                id: 3,
-                name: 'Beatriz Santos',
-                avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-                lastMessage: 'Adorei nosso encontro! 😊',
-                time: 'Ontem',
-                unread: 0,
-                online: true
-            },
-            {
-                id: 4,
-                name: 'João Pedro',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-                lastMessage: 'Que tal um café amanhã?',
-                time: 'Ontem',
-                unread: 1,
-                online: false
-            }
-        ];
+        return [];
     }
 
     generateMockExploreUsers() {
-        return [
-            {
-                id: 1,
-                name: 'Isabella Rodriguez',
-                age: 24,
-                location: 'Leblon, RJ',
-                distance: 2.5,
-                image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=400&fit=crop&crop=face',
-                interests: ['Música', 'Viagens', 'Yoga'],
-                online: true
-            },
-            {
-                id: 2,
-                name: 'Gabriel Costa',
-                age: 28,
-                location: 'Pinheiros, SP',
-                distance: 1.2,
-                image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=400&fit=crop&crop=face',
-                interests: ['Fotografia', 'Culinária', 'Esportes'],
-                online: false
-            },
-            {
-                id: 3,
-                name: 'Camila Oliveira',
-                age: 26,
-                location: 'Botafogo, RJ',
-                distance: 3.8,
-                image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=400&fit=crop&crop=face',
-                interests: ['Arte', 'Literatura', 'Cinema'],
-                online: true
-            },
-            {
-                id: 4,
-                name: 'Lucas Ferreira',
-                age: 30,
-                location: 'Vila Olímpia, SP',
-                distance: 4.5,
-                image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop&crop=face',
-                interests: ['Tecnologia', 'Games', 'Música'],
-                online: false
-            },
-            {
-                id: 5,
-                name: 'Sophia Lima',
-                age: 23,
-                location: 'Ipanema, RJ',
-                distance: 1.8,
-                image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=400&fit=crop&crop=face',
-                interests: ['Dança', 'Moda', 'Fitness'],
-                online: true
-            },
-            {
-                id: 6,
-                name: 'Pedro Almeida',
-                age: 27,
-                location: 'Moema, SP',
-                distance: 6.2,
-                image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=400&fit=crop&crop=face',
-                interests: ['Aventura', 'Natureza', 'Escalada'],
-                online: false
-            }
-        ];
+        return [];
     }
 }
 

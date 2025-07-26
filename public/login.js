@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = document.getElementById('register-password').value;
             const birthdate = document.getElementById('register-birthdate').value;
             const location = document.getElementById('register-location').value;
+            const ageConfirmation = document.getElementById('age-confirmation').checked;
             const submitBtn = this.querySelector('button[type="submit"]');
             
             // Verificação de campos obrigatórios
@@ -150,6 +151,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Por favor, preencha todos os campos obrigatórios.');
                 return;
             }
+
+            // Verificação de confirmação de idade
+            if (!ageConfirmation) {
+                alert('Você deve confirmar que é maior de 18 anos para se cadastrar.');
+                return;
+            }
+
+            // Coletar preferências de gênero
+            const genderPreferences = [];
+            const genderCheckboxes = document.querySelectorAll('input[name="gender-preferences"]:checked');
+            genderCheckboxes.forEach(checkbox => {
+                genderPreferences.push(checkbox.value);
+            });
+
+            // Coletar tipo de relação buscada
+            const relationshipTypes = [];
+            const relationshipCheckboxes = document.querySelectorAll('input[name="relation-type"]:checked');
+            relationshipCheckboxes.forEach(checkbox => {
+                relationshipTypes.push(checkbox.value);
+            });
+
+            // Coletar interesses
+            const interests = [];
+            const interestCheckboxes = document.querySelectorAll('input[name="interests"]:checked');
+            interestCheckboxes.forEach(checkbox => {
+                interests.push(checkbox.value);
+            });
+
+            // Coletar o que busca hoje
+            const lookingFor = [];
+            const lookingForCheckboxes = document.querySelectorAll('input[name="looking-for"]:checked');
+            lookingForCheckboxes.forEach(checkbox => {
+                lookingFor.push(checkbox.value);
+            });
 
             // Verificação de idade (18+)
             const today = new Date();
@@ -184,7 +219,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     password,
                     age,
                     location,
-                    birthdate
+                    birthdate,
+                    genderPreferences,
+                    relationshipTypes,
+                    interests,
+                    lookingFor,
+                    ageConfirmed: true
                 };
 
                 const result = await window.fikaSupabase.registerUser(userData);

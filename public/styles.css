@@ -1379,6 +1379,96 @@ html, body {
     cursor: pointer;
 }
 
+/* Caixa de confirmação única */
+.checkbox-single {
+    margin-top: 8px;
+}
+
+.checkbox-single label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark-color);
+    cursor: pointer;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.checkbox-single label:hover {
+    background: white;
+    border-color: var(--primary-color);
+}
+
+.checkbox-single input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.checkbox-single .checkmark {
+    flex: 1;
+}
+
+/* Seção de Preferências no Perfil */
+.profile-preferences {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.profile-preferences h3 {
+    color: var(--dark-color);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+}
+
+.preference-section {
+    margin-bottom: 20px;
+}
+
+.preference-section h4 {
+    color: var(--dark-color);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.preference-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.preference-tag {
+    background: linear-gradient(135deg, var(--primary-color), #ff8a80);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.preference-tag.empty {
+    background: #f0f0f0;
+    color: #999;
+    font-style: italic;
+}
+
 /* Botões */
 .btn {
     display: inline-block;

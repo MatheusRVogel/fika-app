@@ -3,69 +3,10 @@ let currentScreen = 'home';
 let currentUser = 'Maria Silva';
 
 // Dados de exemplo para explorar
-const exploreUsers = [
-    {
-        id: 1,
-        name: 'Ana',
-        age: 25,
-        location: 'São Paulo, SP',
-        distance: '2 km',
-        image: 'placeholder.svg',
-        liked: false
-    },
-    {
-        id: 2,
-        name: 'Carlos',
-        age: 28,
-        location: 'Rio de Janeiro, RJ',
-        distance: '5 km',
-        image: 'placeholder.svg',
-        liked: false
-    },
-    {
-        id: 3,
-        name: 'Beatriz',
-        age: 23,
-        location: 'Belo Horizonte, MG',
-        distance: '3 km',
-        image: 'placeholder.svg',
-        liked: false
-    },
-    {
-        id: 4,
-        name: 'Diego',
-        age: 30,
-        location: 'Salvador, BA',
-        distance: '7 km',
-        image: 'placeholder.svg',
-        liked: false
-    }
-];
+const exploreUsers = [];
 
 // Dados de exemplo para mensagens
-const chatData = [
-    {
-        id: 1,
-        name: 'Ana Silva',
-        lastMessage: 'Oi! Como você está?',
-        time: '2 min',
-        avatar: 'placeholder.svg'
-    },
-    {
-        id: 2,
-        name: 'Carlos Santos',
-        lastMessage: 'Vamos nos encontrar hoje?',
-        time: '15 min',
-        avatar: 'placeholder.svg'
-    },
-    {
-        id: 3,
-        name: 'Beatriz Costa',
-        lastMessage: 'Adorei seu último post!',
-        time: '1h',
-        avatar: 'placeholder.svg'
-    }
-];
+const chatData = [];
 
 // Função para mostrar notificação
 function showNotification(message) {

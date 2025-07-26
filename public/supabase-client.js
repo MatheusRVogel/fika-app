@@ -1,16 +1,161 @@
 // Configuração do Supabase para o frontend
 class SupabaseClient {
     constructor() {
-        // Usar sempre o mock local para desenvolvimento
-        this.client = null;
-        console.log('✅ Supabase Client inicializado em modo local');
+        this.useLocalStorage = false;
+        
+        // Tentar inicializar Supabase real
+        try {
+            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                this.client = window.supabase.createClient(
+                    'https://kujhzettkaitekulvhqt.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8'
+                );
+                console.log('✅ Supabase Client inicializado com banco real');
+            } else {
+                throw new Error('Supabase não disponível');
+            }
+        } catch (error) {
+            console.warn('⚠️ Supabase não disponível, usando localStorage como fallback');
+            this.useLocalStorage = true;
+        }
+    }
+
+    // Método para registrar usuário
+    async signUp(email, password, userData = {}) {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            const userId = 'user_' + Date.now();
+            const user = {
+                id: userId,
+                email: email,
+                user_metadata: userData
+            };
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.setItem('isLoggedIn', 'true');
+            return { data: { user }, error: null };
+        }
+        
+        try {
+            const { data, error } = await this.client.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: userData
+                }
+            });
+            return { data, error };
+        } catch (error) {
+            console.error('Erro no registro:', error);
+            return { data: null, error };
+        }
+    }
+
+    // Método para fazer login
+    async signIn(email, password) {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            const user = {
+                id: 'user_' + Date.now(),
+                email: email
+            };
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.setItem('isLoggedIn', 'true');
+            return { data: { user }, error: null };
+        }
+        
+        try {
+            const { data, error } = await this.client.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+            return { data, error };
+        } catch (error) {
+            console.error('Erro no login:', error);
+            return { data: null, error };
+        }
+    }
+
+    // Método para fazer logout
+    async signOut() {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userId');
+            return { error: null };
+        }
+        
+        try {
+            const { error } = await this.client.auth.signOut();
+            return { error };
+        } catch (error) {
+            console.error('Erro no logout:', error);
+            return { error };
+        }
+    }
+
+    // Método para obter usuário atual
+    async getCurrentUser() {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            const userStr = localStorage.getItem('currentUser');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (userStr && isLoggedIn) {
+                return { user: JSON.parse(userStr), error: null };
+            }
+            return { user: null, error: null };
+        }
+        
+        try {
+            const { data: { user }, error } = await this.client.auth.getUser();
+            return { user, error };
+        } catch (error) {
+            console.error('Erro ao obter usuário:', error);
+            return { user: null, error };
+        }
     }
 
     // Registrar novo usuário
     async registerUser(userData) {
         try {
-            // Usar sempre localStorage para desenvolvimento local
-            return this.registerUserLocal(userData);
+            // Registrar usuário no Supabase Auth
+            const { data: authData, error: authError } = await this.client.auth.signUp({
+                email: userData.email,
+                password: userData.password,
+                options: {
+                    data: {
+                        name: userData.name
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+
+            // Criar perfil do usuário
+            const { data: profileData, error: profileError } = await this.client
+                .from('profiles')
+                .insert([{
+                    id: authData.user.id,
+                    name: userData.name,
+                    age: userData.age,
+                    location: userData.location,
+                    birthdate: userData.birthdate,
+                    bio: userData.bio || '',
+                    interests: userData.interests || [],
+                    relationship_types: userData.relationshipTypes || [],
+                    looking_for: userData.lookingFor || [],
+                    gender_preferences: userData.genderPreferences || [],
+                    age_confirmed: userData.ageConfirmed || false,
+                    photos: userData.photos || []
+                }])
+                .select()
+                .single();
+
+            if (profileError) throw profileError;
+
+            return { user: authData.user, profile: profileData };
         } catch (error) {
             console.error('Erro ao registrar usuário:', error);
             throw error;
@@ -20,8 +165,13 @@ class SupabaseClient {
     // Login do usuário
     async loginUser(email, password) {
         try {
-            // Usar sempre localStorage para desenvolvimento local
-            return this.loginUserLocal(email, password);
+            const { data, error } = await this.client.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+            return data;
         } catch (error) {
             console.error('Erro ao fazer login:', error);
             throw error;
@@ -31,12 +181,8 @@ class SupabaseClient {
     // Logout do usuário
     async logoutUser() {
         try {
-            // Limpar localStorage
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userId');
-            
+            const { error } = await this.client.auth.signOut();
+            if (error) throw error;
             return true;
         } catch (error) {
             console.error('Erro ao fazer logout:', error);
@@ -44,84 +190,17 @@ class SupabaseClient {
         }
     }
 
-    // Verificar se usuário está logado
-    async getCurrentUser() {
-        try {
-            // Usar localStorage
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (isLoggedIn) {
-                return {
-                    user: {
-                        email: localStorage.getItem('userEmail'),
-                        user_metadata: {
-                            name: localStorage.getItem('userName')
-                        }
-                    }
-                };
-            }
-            return null;
-        } catch (error) {
-            console.error('Erro ao verificar usuário:', error);
-            return null;
-        }
-    }
-
-    // Implementação local usando localStorage
-    registerUserLocal(userData) {
-        const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
-        
-        // Verificar se email já existe
-        if (users.find(u => u.email === userData.email)) {
-            throw new Error('Email já cadastrado');
-        }
-
-        const newUser = {
-            id: Date.now().toString(),
-            email: userData.email,
-            name: userData.name,
-            age: userData.age,
-            location: userData.location,
-            bio: userData.bio || '',
-            interests: userData.interests || [],
-            photos: userData.photos || [],
-            created_at: new Date().toISOString()
-        };
-
-        users.push(newUser);
-        localStorage.setItem('fika_users', JSON.stringify(users));
-
-        // Salvar dados do usuário logado
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', newUser.email);
-        localStorage.setItem('userName', newUser.name);
-        localStorage.setItem('userId', newUser.id);
-
-        return { user: newUser };
-    }
-
-    loginUserLocal(email, password) {
-        const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
-        const user = users.find(u => u.email === email);
-
-        if (!user) {
-            throw new Error('Usuário não encontrado');
-        }
-
-        // Salvar dados do usuário logado
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', user.email);
-        localStorage.setItem('userName', user.name);
-        localStorage.setItem('userId', user.id);
-
-        return { user };
-    }
-
     // Buscar perfil do usuário
     async getUserProfile(userId) {
         try {
-            const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
-            const user = users.find(u => u.id === userId);
-            return user || null;
+            const { data, error } = await this.client
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            return data;
         } catch (error) {
             console.error('Erro ao buscar perfil:', error);
             return null;
@@ -129,5 +208,19 @@ class SupabaseClient {
     }
 }
 
-// Instância global do cliente Supabase
-window.fikaSupabase = new SupabaseClient();
+// Aguardar o carregamento do DOM e do Supabase antes de inicializar
+function initializeSupabase() {
+    if (typeof window.supabase !== 'undefined') {
+        window.fikaSupabase = new SupabaseClient();
+    } else {
+        console.log('Aguardando carregamento do Supabase...');
+        setTimeout(initializeSupabase, 100);
+    }
+}
+
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSupabase);
+} else {
+    initializeSupabase();
+}

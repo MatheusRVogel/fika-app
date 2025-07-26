@@ -317,6 +317,40 @@
                             <button class="profile-btn primary">Editar Perfil</button>
                             <button class="profile-btn secondary">Configurações</button>
                         </div>
+                        
+                        <!-- Seção de Preferências -->
+                        <div class="profile-preferences">
+                            <h3>Minhas Preferências</h3>
+                            
+                            <div class="preference-section">
+                                <h4>Preferências de Gênero</h4>
+                                <div class="preference-tags" id="gender-preferences">
+                                    <!-- Será preenchido dinamicamente -->
+                                </div>
+                            </div>
+                            
+                            <div class="preference-section">
+                                <h4>Tipo de Relação</h4>
+                                <div class="preference-tags" id="relationship-types">
+                                    <!-- Será preenchido dinamicamente -->
+                                </div>
+                            </div>
+                            
+                            <div class="preference-section">
+                                <h4>Interesses</h4>
+                                <div class="preference-tags" id="user-interests">
+                                    <!-- Será preenchido dinamicamente -->
+                                </div>
+                            </div>
+                            
+                            <div class="preference-section">
+                                <h4>O que busco hoje</h4>
+                                <div class="preference-tags" id="looking-for">
+                                    <!-- Será preenchido dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="profile-settings">
                             <div class="setting-item">
                                 <div class="setting-info">
@@ -423,8 +457,8 @@
         <div id="notifications-container" class="notifications-container"></div>
     </div>
 
-    <!-- Supabase Scripts -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-client.js"></script>
     
@@ -452,13 +486,13 @@
             try {
                 const currentUser = await window.fikaSupabase.getCurrentUser();
                 
-                if (!currentUser) {
+                if (!currentUser || !currentUser.user) {
                     console.log('❌ Usuário não autenticado, redirecionando para login');
                     window.location.href = 'login.html';
                     return;
                 }
                 
-                console.log('✅ Usuário autenticado:', currentUser.email);
+                console.log('✅ Usuário autenticado:', currentUser.user.email);
                 
                 // Carregar scripts do app apenas se autenticado
                 const scripts = [
