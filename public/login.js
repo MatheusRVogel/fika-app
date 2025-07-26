@@ -270,7 +270,20 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 // Aguardar o Supabase estar pronto
                 console.log('⏳ Aguardando Supabase estar pronto...');
-                const supabaseClient = await window.waitForSupabaseReady(10000);
+                
+                // Aguarda a função waitForSupabaseReady estar disponível
+                let attempts = 0;
+                const maxAttempts = 50; // 5 segundos
+                while (!window.waitForSupabaseReady && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.waitForSupabaseReady) {
+                    throw new Error('Função waitForSupabaseReady não está disponível');
+                }
+                
+                const supabaseClient = await window.waitForSupabaseReady();
                 console.log('✅ Supabase pronto, fazendo login...');
                 
                 const result = await supabaseClient.loginUser(email, password);

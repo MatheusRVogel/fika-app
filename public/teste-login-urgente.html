@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESTE URGENTE - Login Fikah</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        
+        .login-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 TESTE URGENTE - Correção do Login</h1>
+    
+    <div class="test-container">
+        <h2>📋 Status dos Testes</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>🔐 Teste de Login</h2>
+        <div class="login-form">
+            <div class="form-group">
+                <label for="test-email">E-mail:</label>
+                <input type="email" id="test-email" value="teste@exemplo.com" placeholder="Digite seu e-mail">
+            </div>
+            <div class="form-group">
+                <label for="test-password">Senha:</label>
+                <input type="password" id="test-password" value="123456" placeholder="Digite sua senha">
+            </div>
+            <button id="test-login-btn" onclick="testLogin()">🚀 Testar Login</button>
+            <button onclick="testSupabaseConnection()">🔍 Testar Conexão Supabase</button>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>📝 Log de Execução</h2>
+        <div id="execution-log" class="log"></div>
+        <button onclick="clearLog()">🗑️ Limpar Log</button>
+    </div>
+
+    <!-- Scripts necessários -->
+    <script src="supabase.min.js"></script>
+    <script src="notifications.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="fikah-api.js"></script>
+
+    <script>
+        let testResults = document.getElementById('test-results');
+        let executionLog = document.getElementById('execution-log');
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'black';
+            executionLog.appendChild(logEntry);
+            executionLog.scrollTop = executionLog.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function addTestResult(test, status, message) {
+            const result = document.createElement('div');
+            result.className = `status ${status}`;
+            result.innerHTML = `<strong>${test}:</strong> ${message}`;
+            testResults.appendChild(result);
+        }
+
+        function clearLog() {
+            executionLog.innerHTML = '';
+            testResults.innerHTML = '';
+        }
+
+        // Teste 1: Verificar se scripts carregaram
+        function testScriptLoading() {
+            addLog('🔍 Testando carregamento de scripts...', 'info');
+            
+            // Teste Supabase
+            if (typeof window.supabase !== 'undefined') {
+                addTestResult('Supabase Script', 'success', 'Carregado com sucesso');
+                addLog('✅ window.supabase está disponível', 'success');
+            } else {
+                addTestResult('Supabase Script', 'error', 'Não carregado');
+                addLog('❌ window.supabase não está disponível', 'error');
+            }
+
+            // Teste waitForSupabaseReady
+            if (typeof window.waitForSupabaseReady === 'function') {
+                addTestResult('waitForSupabaseReady', 'success', 'Função disponível');
+                addLog('✅ window.waitForSupabaseReady está disponível', 'success');
+            } else {
+                addTestResult('waitForSupabaseReady', 'error', 'Função não disponível');
+                addLog('❌ window.waitForSupabaseReady não está disponível', 'error');
+            }
+
+            // Teste configurações
+            if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
+                addTestResult('Configurações Supabase', 'success', 'Configurações carregadas');
+                addLog('✅ Configurações do Supabase carregadas', 'success');
+            } else {
+                addTestResult('Configurações Supabase', 'error', 'Configurações não encontradas');
+                addLog('❌ Configurações do Supabase não encontradas', 'error');
+            }
+        }
+
+        // Teste 2: Conexão com Supabase
+        async function testSupabaseConnection() {
+            addLog('🔗 Testando conexão com Supabase...', 'info');
+            
+            try {
+                if (!window.waitForSupabaseReady) {
+                    throw new Error('waitForSupabaseReady não está disponível');
+                }
+
+                addLog('⏳ Aguardando Supabase estar pronto...', 'info');
+                const supabaseClient = await window.waitForSupabaseReady(10000);
+                
+                addLog('✅ Supabase inicializado com sucesso!', 'success');
+                addTestResult('Conexão Supabase', 'success', 'Conectado com sucesso');
+
+                // Testar sessão
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error && error.message !== 'Auth session missing!') {
+                    addLog(`⚠️ Aviso na sessão: ${error.message}`, 'warning');
+                } else {
+                    addLog('✅ Teste de sessão passou', 'success');
+                }
+
+                return supabaseClient;
+            } catch (error) {
+                addLog(`❌ Erro na conexão: ${error.message}`, 'error');
+                addTestResult('Conexão Supabase', 'error', error.message);
+                throw error;
+            }
+        }
+
+        // Teste 3: Login
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const loginBtn = document.getElementById('test-login-btn');
+
+            if (!email || !password) {
+                addLog('❌ Por favor, preencha email e senha', 'error');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = '⏳ Testando...';
+
+            try {
+                addLog('🚀 Iniciando teste de login...', 'info');
+                
+                // Primeiro, testar conexão
+                const supabaseClient = await testSupabaseConnection();
+                
+                addLog(`📧 Tentando login com: ${email}`, 'info');
+                
+                // Tentar login
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    addLog(`❌ Erro no login: ${error.message}`, 'error');
+                    addTestResult('Teste de Login', 'error', error.message);
+                } else {
+                    addLog('✅ Login realizado com sucesso!', 'success');
+                    addTestResult('Teste de Login', 'success', `Usuário logado: ${data.user?.email}`);
+                    
+                    if (data.user) {
+                        addLog(`👤 Usuário: ${data.user.email}`, 'success');
+                        addLog(`🆔 ID: ${data.user.id}`, 'info');
+                    }
+                }
+
+            } catch (error) {
+                addLog(`💥 Erro crítico: ${error.message}`, 'error');
+                addTestResult('Teste de Login', 'error', `Erro crítico: ${error.message}`);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '🚀 Testar Login';
+            }
+        }
+
+        // Executar testes iniciais quando a página carregar
+        window.addEventListener('load', function() {
+            addLog('🎯 Página carregada, iniciando testes...', 'info');
+            
+            // Aguardar um pouco para os scripts carregarem
+            setTimeout(() => {
+                testScriptLoading();
+                
+                // Testar conexão automaticamente
+                setTimeout(() => {
+                    testSupabaseConnection().catch(error => {
+                        addLog(`⚠️ Teste automático de conexão falhou: ${error.message}`, 'warning');
+                    });
+                }, 2000);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

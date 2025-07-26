@@ -3,35 +3,46 @@ window.fikahSupabaseReady = false;
 window.fikahSupabase = null;
 window.supabaseInitializationError = null;
 
-// Função para aguardar o carregamento do Supabase
-window.waitForSupabaseReady = function() {
+// Função para aguardar o carregamento do Supabase - DEFINIDA IMEDIATAMENTE
+window.waitForSupabaseReady = function(timeout = 15000) {
     return new Promise((resolve, reject) => {
+        console.log('🔄 waitForSupabaseReady chamada, verificando estado...');
+        
         // Se já está pronto, resolve imediatamente
         if (window.fikahSupabaseReady && window.fikahSupabase) {
+            console.log('✅ Supabase já está pronto!');
             resolve(window.fikahSupabase);
             return;
         }
 
         // Se houve erro na inicialização, rejeita
         if (window.supabaseInitializationError) {
+            console.log('❌ Erro na inicialização detectado:', window.supabaseInitializationError);
             reject(window.supabaseInitializationError);
             return;
         }
 
+        console.log(`⏳ Aguardando inicialização do Supabase (timeout: ${timeout}ms)...`);
+
         // Aguarda o evento de inicialização
-        const timeout = setTimeout(() => {
+        const timeoutId = setTimeout(() => {
+            console.log('⏰ Timeout aguardando inicialização do Supabase');
+            document.removeEventListener('supabaseReady', handleReady);
+            document.removeEventListener('supabaseError', handleError);
             reject(new Error('Timeout aguardando inicialização do Supabase'));
-        }, 20000); // 20 segundos
+        }, timeout);
 
         const handleReady = () => {
-            clearTimeout(timeout);
+            console.log('🎉 Evento supabaseReady recebido!');
+            clearTimeout(timeoutId);
             document.removeEventListener('supabaseReady', handleReady);
             document.removeEventListener('supabaseError', handleError);
             resolve(window.fikahSupabase);
         };
 
         const handleError = (event) => {
-            clearTimeout(timeout);
+            console.log('💥 Evento supabaseError recebido:', event.detail);
+            clearTimeout(timeoutId);
             document.removeEventListener('supabaseReady', handleReady);
             document.removeEventListener('supabaseError', handleError);
             reject(event.detail || new Error('Erro na inicialização do Supabase'));
