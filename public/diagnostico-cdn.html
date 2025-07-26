@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico CDN Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 Diagnóstico CDN Supabase</h1>
+        <p>Verificando se o CDN do Supabase está carregando corretamente.</p>
+        
+        <div id="status-container">
+            <div class="status info">⏳ Iniciando diagnóstico...</div>
+        </div>
+        
+        <div id="logs-container">
+            <h3>📝 Logs:</h3>
+            <pre id="logs"></pre>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('logs');
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function addStatus(message, type = 'info') {
+            const container = document.getElementById('status-container');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            container.appendChild(statusDiv);
+        }
+
+        // Teste 1: Verificar se o script do CDN carrega
+        addLog('🔄 Teste 1: Carregando CDN do Supabase...');
+        
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js';
+        
+        script.onload = function() {
+            addLog('✅ CDN do Supabase carregado com sucesso');
+            addStatus('✅ CDN do Supabase carregado', 'success');
+            
+            // Teste 2: Verificar se window.supabase está disponível
+            setTimeout(() => {
+                if (typeof window.supabase !== 'undefined') {
+                    addLog('✅ window.supabase está disponível');
+                    addStatus('✅ window.supabase disponível', 'success');
+                    
+                    // Teste 3: Verificar métodos do Supabase
+                    if (typeof window.supabase.createClient === 'function') {
+                        addLog('✅ window.supabase.createClient está disponível');
+                        addStatus('✅ Métodos do Supabase disponíveis', 'success');
+                        
+                        // Teste 4: Tentar criar cliente
+                        try {
+                            const testClient = window.supabase.createClient(
+                                'https://test.supabase.co', 
+                                'test-key'
+                            );
+                            addLog('✅ Cliente Supabase criado com sucesso (teste)');
+                            addStatus('✅ Cliente Supabase funcional', 'success');
+                        } catch (error) {
+                            addLog(`❌ Erro ao criar cliente: ${error.message}`);
+                            addStatus('❌ Erro ao criar cliente', 'error');
+                        }
+                    } else {
+                        addLog('❌ window.supabase.createClient não está disponível');
+                        addStatus('❌ Métodos do Supabase indisponíveis', 'error');
+                    }
+                } else {
+                    addLog('❌ window.supabase não está disponível após carregamento');
+                    addStatus('❌ window.supabase indisponível', 'error');
+                }
+                
+                // Teste 5: Carregar supabase-client.js
+                addLog('🔄 Teste 5: Carregando supabase-client.js...');
+                const clientScript = document.createElement('script');
+                clientScript.src = 'supabase-client.js';
+                
+                clientScript.onload = function() {
+                    addLog('✅ supabase-client.js carregado');
+                    
+                    // Verificar se waitForSupabaseReady foi definida
+                    setTimeout(() => {
+                        if (typeof window.waitForSupabaseReady === 'function') {
+                            addLog('✅ window.waitForSupabaseReady está disponível');
+                            addStatus('✅ waitForSupabaseReady disponível', 'success');
+                            
+                            // Testar a função
+                            window.waitForSupabaseReady(5000)
+                                .then(client => {
+                                    addLog('✅ waitForSupabaseReady funcionou!');
+                                    addStatus('✅ Tudo funcionando corretamente!', 'success');
+                                })
+                                .catch(error => {
+                                    addLog(`❌ Erro em waitForSupabaseReady: ${error.message}`);
+                                    addStatus('❌ Erro em waitForSupabaseReady', 'error');
+                                });
+                        } else {
+                            addLog('❌ window.waitForSupabaseReady não está disponível');
+                            addStatus('❌ waitForSupabaseReady indisponível', 'error');
+                        }
+                    }, 1000);
+                };
+                
+                clientScript.onerror = function() {
+                    addLog('❌ Erro ao carregar supabase-client.js');
+                    addStatus('❌ Erro ao carregar supabase-client.js', 'error');
+                };
+                
+                document.head.appendChild(clientScript);
+            }, 500);
+        };
+        
+        script.onerror = function() {
+            addLog('❌ Erro ao carregar CDN do Supabase');
+            addStatus('❌ CDN do Supabase falhou', 'error');
+            
+            // Tentar CDN alternativo
+            addLog('🔄 Tentando CDN alternativo...');
+            const altScript = document.createElement('script');
+            altScript.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+            
+            altScript.onload = function() {
+                addLog('✅ CDN alternativo carregado');
+                addStatus('✅ CDN alternativo funcionou', 'success');
+            };
+            
+            altScript.onerror = function() {
+                addLog('❌ CDN alternativo também falhou');
+                addStatus('❌ Todos os CDNs falharam', 'error');
+            };
+            
+            document.head.appendChild(altScript);
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

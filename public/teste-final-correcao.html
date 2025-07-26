@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Final - Supabase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background-color: #0056b3; }
+        .btn:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Final - Correção do Loop de Login</h1>
+        
+        <div id="status" class="status info">
+            ⏳ Iniciando testes...
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="teste@fikah.com" placeholder="Digite seu email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha:</label>
+            <input type="password" id="password" value="123456" placeholder="Digite sua senha">
+        </div>
+
+        <div>
+            <button class="btn" onclick="testLogin()" id="loginBtn">🔐 Testar Login</button>
+            <button class="btn" onclick="checkSession()" id="sessionBtn">👤 Verificar Sessão</button>
+            <button class="btn" onclick="testLogout()" id="logoutBtn">🚪 Fazer Logout</button>
+            <button class="btn" onclick="goToApp()" id="appBtn">🏠 Ir para App</button>
+        </div>
+
+        <div id="logs" class="log"></div>
+    </div>
+
+    <!-- Scripts do Supabase -->
+    <script src="supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+
+    <script>
+        let logs = [];
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logs.push(logEntry);
+            
+            const logDiv = document.getElementById('logs');
+            logDiv.innerHTML = logs.join('\n');
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        async function testLogin() {
+            try {
+                updateStatus('🔄 Testando login...', 'info');
+                addLog('=== INICIANDO TESTE DE LOGIN ===');
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                if (!email || !password) {
+                    throw new Error('Email e senha são obrigatórios');
+                }
+
+                addLog('📧 Email: ' + email);
+                addLog('🔑 Senha: ' + '*'.repeat(password.length));
+                
+                // Aguardar Supabase estar pronto
+                addLog('⏳ Aguardando Supabase estar pronto...');
+                const supabase = await window.waitForSupabaseReady();
+                addLog('✅ Supabase pronto!');
+                
+                // Fazer login
+                addLog('🔐 Fazendo login...');
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                addLog('✅ Login realizado com sucesso!');
+                addLog('👤 Usuário: ' + data.user.email);
+                addLog('🎫 Sessão: ' + (data.session ? 'Ativa' : 'Inativa'));
+                
+                updateStatus('✅ Login realizado com sucesso!', 'success');
+                
+            } catch (error) {
+                addLog('❌ Erro no login: ' + error.message);
+                updateStatus('❌ Erro no login: ' + error.message, 'error');
+            }
+        }
+
+        async function checkSession() {
+            try {
+                updateStatus('🔄 Verificando sessão...', 'info');
+                addLog('=== VERIFICANDO SESSÃO ===');
+                
+                // Aguardar Supabase estar pronto
+                const supabase = await window.waitForSupabaseReady();
+                addLog('✅ Supabase pronto!');
+                
+                // Verificar sessão
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (session) {
+                    addLog('✅ Sessão ativa encontrada!');
+                    addLog('👤 Usuário: ' + session.user.email);
+                    addLog('⏰ Expira em: ' + new Date(session.expires_at * 1000).toLocaleString());
+                    updateStatus('✅ Usuário autenticado: ' + session.user.email, 'success');
+                } else {
+                    addLog('❌ Nenhuma sessão ativa');
+                    updateStatus('❌ Usuário não autenticado', 'warning');
+                }
+                
+            } catch (error) {
+                addLog('❌ Erro ao verificar sessão: ' + error.message);
+                updateStatus('❌ Erro ao verificar sessão: ' + error.message, 'error');
+            }
+        }
+
+        async function testLogout() {
+            try {
+                updateStatus('🔄 Fazendo logout...', 'info');
+                addLog('=== FAZENDO LOGOUT ===');
+                
+                // Aguardar Supabase estar pronto
+                const supabase = await window.waitForSupabaseReady();
+                addLog('✅ Supabase pronto!');
+                
+                // Fazer logout
+                const { error } = await supabase.auth.signOut();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                addLog('✅ Logout realizado com sucesso!');
+                updateStatus('✅ Logout realizado com sucesso!', 'success');
+                
+            } catch (error) {
+                addLog('❌ Erro no logout: ' + error.message);
+                updateStatus('❌ Erro no logout: ' + error.message, 'error');
+            }
+        }
+
+        function goToApp() {
+            addLog('🏠 Redirecionando para o aplicativo...');
+            window.location.href = '/';
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async function() {
+            addLog('🚀 Página carregada, iniciando testes...');
+            
+            try {
+                // Testar se waitForSupabaseReady está disponível
+                if (typeof window.waitForSupabaseReady !== 'function') {
+                    throw new Error('window.waitForSupabaseReady não está definida');
+                }
+                addLog('✅ window.waitForSupabaseReady está disponível');
+                
+                // Aguardar Supabase estar pronto
+                addLog('⏳ Aguardando Supabase estar pronto...');
+                const supabase = await window.waitForSupabaseReady();
+                addLog('✅ Supabase inicializado com sucesso!');
+                
+                // Verificar sessão inicial
+                await checkSession();
+                
+                updateStatus('✅ Sistema pronto para testes!', 'success');
+                
+            } catch (error) {
+                addLog('❌ Erro na inicialização: ' + error.message);
+                updateStatus('❌ Erro na inicialização: ' + error.message, 'error');
+            }
+        });
+
+        // Escutar eventos do Supabase
+        document.addEventListener('supabaseReady', function(event) {
+            addLog('🎉 Evento supabaseReady recebido!');
+        });
+
+        document.addEventListener('supabaseError', function(event) {
+            addLog('💥 Evento supabaseError recebido: ' + (event.detail?.message || 'Erro desconhecido'));
+        });
+    </script>
+</body>
+</html>
