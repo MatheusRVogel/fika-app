@@ -92,12 +92,54 @@ class SupabaseClient {
     // Método para obter usuário atual
     async getCurrentUser() {
         try {
+            // Primeiro, verificar se há uma sessão ativa
+            const { data: { session }, error: sessionError } = await this.client.auth.getSession();
+            
+            if (sessionError) {
+                console.error('Erro ao obter sessão:', sessionError);
+                return { user: null, error: sessionError };
+            }
+            
+            if (!session) {
+                console.log('Nenhuma sessão ativa encontrada');
+                return { user: null, error: null };
+            }
+            
+            // Se há sessão, obter dados do usuário
             const { data: { user }, error } = await this.client.auth.getUser();
-            return { user, error };
+            
+            if (error) {
+                console.error('Erro ao obter usuário:', error);
+                return { user: null, error };
+            }
+            
+            console.log('✅ Usuário obtido com sucesso:', user?.email);
+            return { user, error: null };
         } catch (error) {
             console.error('Erro ao obter usuário:', error);
             return { user: null, error };
         }
+    }
+
+    // Método para aguardar sessão ser estabelecida
+    async waitForSession(maxAttempts = 10) {
+        for (let i = 0; i < maxAttempts; i++) {
+            try {
+                const { data: { session } } = await this.client.auth.getSession();
+                if (session) {
+                    console.log('✅ Sessão encontrada na tentativa', i + 1);
+                    return session;
+                }
+            } catch (error) {
+                console.warn('Erro ao verificar sessão na tentativa', i + 1, ':', error);
+            }
+            
+            // Aguardar 500ms antes da próxima tentativa
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        console.log('❌ Nenhuma sessão encontrada após', maxAttempts, 'tentativas');
+        return null;
     }
 
     // Registrar novo usuário

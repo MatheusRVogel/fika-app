@@ -277,8 +277,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.notifications.success('Login realizado com sucesso!');
                     }
                     
-                    // Redirecionar para o app
-                    window.location.href = '/app';
+                    // Aguardar um pouco para garantir que a sessão seja estabelecida
+                    console.log('⏳ Aguardando sessão ser estabelecida...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Verificar se a sessão foi estabelecida
+                    const session = await window.fikahSupabase.waitForSession(5);
+                    if (session) {
+                        console.log('✅ Sessão confirmada, redirecionando para o app');
+                        // Redirecionar para o app
+                        window.location.href = '/app';
+                    } else {
+                        console.warn('⚠️ Sessão não estabelecida, mas prosseguindo com redirecionamento');
+                        window.location.href = '/app';
+                    }
                 }
             } catch (error) {
                 console.error('Erro no login:', error);

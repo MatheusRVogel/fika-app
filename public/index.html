@@ -548,6 +548,17 @@
                     return;
                 }
                 
+                // Aguardar sessão ser estabelecida (importante após login)
+                console.log('⏳ Aguardando sessão ser estabelecida...');
+                const session = await window.fikahSupabase.waitForSession(15); // 7.5 segundos máximo
+                
+                if (!session) {
+                    console.log('❌ Nenhuma sessão encontrada, redirecionando para login');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                console.log('✅ Sessão encontrada, verificando usuário...');
                 const currentUser = await window.fikahSupabase.getCurrentUser();
                 
                 if (!currentUser || !currentUser.user) {

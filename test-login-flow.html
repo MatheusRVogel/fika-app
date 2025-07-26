@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Fluxo de Login Corrigido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background: #f8fff8; }
+        .error { border-color: #f44336; background: #fff8f8; }
+        .warning { border-color: #ff9800; background: #fffaf0; }
+        .info { border-color: #2196F3; background: #f0f8ff; }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #ff5252; }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste - Fluxo de Login Corrigido</h1>
+        <p>Este teste verifica se o problema do loop de login foi resolvido.</p>
+
+        <div class="test-section info">
+            <h3>📋 Informações das Correções</h3>
+            <ul>
+                <li>✅ Método getCurrentUser() melhorado para verificar sessão primeiro</li>
+                <li>✅ Adicionado método waitForSession() para aguardar sessão ser estabelecida</li>
+                <li>✅ Login aguarda sessão antes de redirecionar</li>
+                <li>✅ Verificação de autenticação no app aguarda sessão</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 Teste de Login</h3>
+            <input type="email" id="test-email" placeholder="Email de teste" value="">
+            <input type="password" id="test-password" placeholder="Senha de teste" value="">
+            <button onclick="testLogin()">Testar Login</button>
+            <button onclick="testCurrentUser()">Verificar Usuário Atual</button>
+            <button onclick="testSession()">Verificar Sessão</button>
+            <div id="login-log" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Teste de Redirecionamento</h3>
+            <p>Após fazer login, o sistema deve:</p>
+            <ol>
+                <li>Aguardar 1 segundo para sessão ser estabelecida</li>
+                <li>Verificar se a sessão existe</li>
+                <li>Redirecionar para /app</li>
+                <li>No /app, aguardar até 7.5 segundos pela sessão</li>
+                <li>Verificar usuário atual</li>
+                <li>Carregar o aplicativo</li>
+            </ol>
+            <button onclick="window.location.href='/app'">Ir para App (teste direto)</button>
+            <button onclick="window.location.href='login.html'">Ir para Login</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Status do Sistema</h3>
+            <div id="system-status">Verificando...</div>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+
+    <script>
+        let logElement = document.getElementById('login-log');
+        let statusElement = document.getElementById('system-status');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            logElement.innerHTML += `<div style="color: ${type === 'error' ? 'red' : type === 'success' ? 'green' : 'black'}">${logEntry}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        async function checkSystemStatus() {
+            try {
+                // Verificar se Supabase está carregado
+                if (typeof window.supabase === 'undefined') {
+                    statusElement.innerHTML = '<span style="color: red;">❌ Supabase CDN não carregado</span>';
+                    return;
+                }
+
+                // Verificar se cliente está inicializado
+                if (!window.fikahSupabase) {
+                    statusElement.innerHTML = '<span style="color: orange;">⏳ Aguardando inicialização do cliente...</span>';
+                    setTimeout(checkSystemStatus, 1000);
+                    return;
+                }
+
+                // Verificar sessão atual
+                const session = await window.fikahSupabase.waitForSession(3);
+                const currentUser = await window.fikahSupabase.getCurrentUser();
+
+                let status = '<div>';
+                status += '<div>✅ Supabase CDN: Carregado</div>';
+                status += '<div>✅ Cliente Supabase: Inicializado</div>';
+                status += `<div>${session ? '✅' : '❌'} Sessão: ${session ? 'Ativa' : 'Não encontrada'}</div>`;
+                status += `<div>${currentUser.user ? '✅' : '❌'} Usuário: ${currentUser.user ? currentUser.user.email : 'Não autenticado'}</div>`;
+                status += '</div>';
+
+                statusElement.innerHTML = status;
+            } catch (error) {
+                statusElement.innerHTML = `<span style="color: red;">❌ Erro: ${error.message}</span>`;
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+
+            if (!email || !password) {
+                log('Por favor, preencha email e senha', 'error');
+                return;
+            }
+
+            logElement.innerHTML = '';
+            log('Iniciando teste de login...');
+
+            try {
+                log('Fazendo login...');
+                const result = await window.fikahSupabase.loginUser(email, password);
+                
+                if (result.user) {
+                    log(`✅ Login bem-sucedido: ${result.user.email}`, 'success');
+                    
+                    log('Aguardando sessão ser estabelecida...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const session = await window.fikahSupabase.waitForSession(5);
+                    if (session) {
+                        log('✅ Sessão estabelecida com sucesso', 'success');
+                        log('🚀 Pronto para redirecionar para /app', 'success');
+                    } else {
+                        log('⚠️ Sessão não encontrada, mas login foi bem-sucedido', 'warning');
+                    }
+                } else {
+                    log('❌ Login falhou', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro no login: ${error.message}`, 'error');
+            }
+
+            // Atualizar status
+            setTimeout(checkSystemStatus, 500);
+        }
+
+        async function testCurrentUser() {
+            logElement.innerHTML = '';
+            log('Testando getCurrentUser...');
+
+            try {
+                const result = await window.fikahSupabase.getCurrentUser();
+                if (result.user) {
+                    log(`✅ Usuário atual: ${result.user.email}`, 'success');
+                } else {
+                    log('❌ Nenhum usuário autenticado', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSession() {
+            logElement.innerHTML = '';
+            log('Testando sessão...');
+
+            try {
+                const session = await window.fikahSupabase.waitForSession(5);
+                if (session) {
+                    log('✅ Sessão ativa encontrada', 'success');
+                    log(`Usuário: ${session.user.email}`, 'info');
+                } else {
+                    log('❌ Nenhuma sessão ativa', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Verificar status ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkSystemStatus, 1000);
+        });
+    </script>
+</body>
+</html>
