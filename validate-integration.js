@@ -65,7 +65,7 @@ class IntegrationValidator {
       'server.js',
       'supabase-service.js',
       'stripe-service.js',
-      'fika-api.js',
+      'fikah-api.js',
       'index.html',
       'app.js',
       'app.css',
