@@ -288,12 +288,67 @@ class FikahApp {
         this.posts = this.generateMockPosts();
         this.stories = this.generateMockStories();
         this.chats = this.generateMockChats();
-        this.exploreUsers = this.generateMockExploreUsers();
+        
+        // Load explore users from Supabase or mock data
+        await this.loadExploreUsers();
         
         // Render initial content
         this.renderPosts();
         this.renderChats();
         this.renderExploreUsers();
+    }
+
+    async loadExploreUsers() {
+        try {
+            // Tentar carregar usuários do Supabase
+            if (window.fikahSupabase) {
+                const userId = localStorage.getItem('userId');
+                const userLat = parseFloat(localStorage.getItem('userLatitude'));
+                const userLng = parseFloat(localStorage.getItem('userLongitude'));
+                
+                if (userId && userLat && userLng) {
+                    // Sincronizar localização atual do usuário
+                    await this.syncUserLocation();
+                    
+                    // Carregar usuários próximos do Supabase
+                    const nearbyUsers = await window.fikahSupabase.getNearbyUsers(userId, userLat, userLng, 50); // 50km radius
+                    
+                    if (nearbyUsers && nearbyUsers.length > 0) {
+                        this.exploreUsers = nearbyUsers.map(user => ({
+                            ...user,
+                            image: user.photos && user.photos.length > 0 ? user.photos[0] : '/api/placeholder/300/400',
+                            interests: user.interests || ['Café', 'Música'],
+                            online: Math.random() > 0.5,
+                            liked: false
+                        }));
+                        console.log('Usuários carregados do Supabase:', this.exploreUsers.length);
+                        return;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar usuários do Supabase:', error);
+        }
+        
+        // Fallback para dados mock
+        this.exploreUsers = this.generateMockExploreUsers();
+        console.log('Usando dados mock para usuários');
+    }
+
+    async syncUserLocation() {
+        try {
+            const userId = localStorage.getItem('userId');
+            const userLat = parseFloat(localStorage.getItem('userLatitude'));
+            const userLng = parseFloat(localStorage.getItem('userLongitude'));
+            const userLocation = localStorage.getItem('userLocation');
+            
+            if (userId && userLat && userLng && window.fikahSupabase) {
+                await window.fikahSupabase.updateUserLocation(userId, userLat, userLng, userLocation);
+                console.log('Localização do usuário sincronizada com o Supabase');
+            }
+        } catch (error) {
+            console.error('Erro ao sincronizar localização:', error);
+        }
     }
 
     setupEventListeners() {
@@ -1297,7 +1352,7 @@ class FikahApp {
         return deg * (Math.PI / 180);
     }
 
-    filterByProximity(filter) {
+    async filterByProximity(filter) {
         console.log(`Filtering by: ${filter}`);
         
         const userLat = parseFloat(localStorage.getItem('userLatitude'));
@@ -1331,46 +1386,92 @@ class FikahApp {
                 break;
         }
 
-        if (maxDistance === null) {
-            // Mostrar todos os usuários
-            this.renderExploreUsers(this.exploreUsers);
-            this.showNotification('Mostrando todas as pessoas', 'info');
-        } else {
-            // Filtrar usuários por distância
-            const filteredUsers = this.exploreUsers.filter(user => {
-                if (!user.latitude || !user.longitude) return false;
-                const distance = this.calculateDistance(userLat, userLng, user.latitude, user.longitude);
-                user.distance = distance; // Adicionar distância ao objeto do usuário
-                return distance <= maxDistance;
-            });
-            
-            this.renderExploreUsers(filteredUsers);
-            this.showNotification(`${filteredUsers.length} pessoas encontradas em um raio de ${maxDistance}km`, 'success');
+        let filteredUsers = [];
+
+        try {
+            // Se temos Supabase e usuário logado, buscar do banco
+            if (window.fikahSupabase && localStorage.getItem('userId') && maxDistance !== null) {
+                const userId = localStorage.getItem('userId');
+                const nearbyUsers = await window.fikahSupabase.getNearbyUsers(userId, userLat, userLng, maxDistance);
+                
+                if (nearbyUsers && nearbyUsers.length > 0) {
+                    filteredUsers = nearbyUsers.map(user => ({
+                        ...user,
+                        image: user.photos && user.photos.length > 0 ? user.photos[0] : '/api/placeholder/300/400',
+                        interests: user.interests || ['Café', 'Música'],
+                        online: Math.random() > 0.5,
+                        liked: false
+                    }));
+                    
+                    this.renderExploreUsers(filteredUsers);
+                    this.showNotification(`${filteredUsers.length} pessoas encontradas em um raio de ${maxDistance}km`, 'success');
+                } else {
+                    this.renderExploreUsers([]);
+                    this.showNotification(`Nenhuma pessoa encontrada em um raio de ${maxDistance}km`, 'info');
+                }
+            } else {
+                // Fallback para filtro local com dados mock
+                if (maxDistance === null) {
+                    // Mostrar todos os usuários
+                    this.renderExploreUsers(this.exploreUsers);
+                    this.showNotification('Mostrando todas as pessoas', 'info');
+                } else {
+                    // Filtrar usuários por distância
+                    filteredUsers = this.exploreUsers.filter(user => {
+                        if (!user.latitude || !user.longitude) return false;
+                        const distance = this.calculateDistance(userLat, userLng, user.latitude, user.longitude);
+                        user.distance = distance; // Adicionar distância ao objeto do usuário
+                        return distance <= maxDistance;
+                    });
+                    
+                    this.renderExploreUsers(filteredUsers);
+                    this.showNotification(`${filteredUsers.length} pessoas encontradas em um raio de ${maxDistance}km`, 'success');
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao filtrar por proximidade:', error);
+            // Fallback para filtro local em caso de erro
+            if (maxDistance === null) {
+                this.renderExploreUsers(this.exploreUsers);
+                this.showNotification('Mostrando todas as pessoas', 'info');
+            } else {
+                filteredUsers = this.exploreUsers.filter(user => {
+                    if (!user.latitude || !user.longitude) return false;
+                    const distance = this.calculateDistance(userLat, userLng, user.latitude, user.longitude);
+                    user.distance = distance;
+                    return distance <= maxDistance;
+                });
+                
+                this.renderExploreUsers(filteredUsers);
+                this.showNotification(`${filteredUsers.length} pessoas encontradas em um raio de ${maxDistance}km`, 'success');
+            }
         }
         
         // Atualizar o texto do botão dropdown
         const dropdownBtn = document.getElementById('proximity-dropdown-btn');
-        const span = dropdownBtn.querySelector('span');
-        switch(filter) {
-            case '5km':
-                span.textContent = '5 km';
-                break;
-            case '10km':
-                span.textContent = '10 km';
-                break;
-            case '25km':
-                span.textContent = '25 km';
-                break;
-            case '50km':
-                span.textContent = '50 km';
-                break;
-            case 'nearby':
-                span.textContent = 'Próximos (5km)';
-                break;
-            case 'all':
-            default:
-                span.textContent = 'Todos';
-                break;
+        const span = dropdownBtn?.querySelector('span');
+        if (span) {
+            switch(filter) {
+                case '5km':
+                    span.textContent = '5 km';
+                    break;
+                case '10km':
+                    span.textContent = '10 km';
+                    break;
+                case '25km':
+                    span.textContent = '25 km';
+                    break;
+                case '50km':
+                    span.textContent = '50 km';
+                    break;
+                case 'nearby':
+                    span.textContent = 'Próximos (5km)';
+                    break;
+                case 'all':
+                default:
+                    span.textContent = 'Todos';
+                    break;
+            }
         }
     }
 

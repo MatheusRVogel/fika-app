@@ -68,6 +68,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 localStorage.setItem('userLatitude', lat);
                                 localStorage.setItem('userLongitude', lng);
                                 
+                                // Se o usuário estiver logado, atualizar localização no Supabase
+                                const userId = localStorage.getItem('userId');
+                                if (userId && window.fikahSupabase) {
+                                    try {
+                                        await window.fikahSupabase.updateUserLocation(userId, lat, lng, city + (state ? ', ' + state : ''));
+                                        console.log('Localização atualizada no Supabase');
+                                    } catch (error) {
+                                        console.error('Erro ao atualizar localização no Supabase:', error);
+                                    }
+                                }
+                                
                                 locationInput.value = city + (state ? ', ' + state : '');
                                 getLocationBtn.textContent = 'Localização obtida!';
                                 setTimeout(() => {
@@ -234,6 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     password,
                     age,
                     location,
+                    latitude: parseFloat(localStorage.getItem('userLatitude')) || null,
+                    longitude: parseFloat(localStorage.getItem('userLongitude')) || null,
                     birthdate,
                     genderPreferences,
                     relationshipTypes,

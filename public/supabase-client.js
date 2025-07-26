@@ -187,6 +187,8 @@ class SupabaseClient {
                     name: userData.name,
                     age: userData.age,
                     location: userData.location,
+                    latitude: userData.latitude || null,
+                    longitude: userData.longitude || null,
                     birthdate: userData.birthdate,
                     bio: userData.bio || '',
                     interests: userData.interests || [],
@@ -271,6 +273,80 @@ class SupabaseClient {
         } catch (error) {
             console.error('Erro ao buscar perfil:', error);
             return null;
+        }
+    }
+
+    // Atualizar localização do usuário
+    async updateUserLocation(userId, latitude, longitude, location) {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            try {
+                const existingUsers = JSON.parse(localStorage.getItem('fikah_users') || '[]');
+                const userIndex = existingUsers.findIndex(u => u.id === userId);
+                
+                if (userIndex !== -1) {
+                    existingUsers[userIndex].user_metadata.latitude = latitude;
+                    existingUsers[userIndex].user_metadata.longitude = longitude;
+                    existingUsers[userIndex].user_metadata.location = location;
+                    localStorage.setItem('fikah_users', JSON.stringify(existingUsers));
+                    
+                    // Atualizar usuário atual se for o mesmo
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    if (currentUser.id === userId) {
+                        currentUser.user_metadata.latitude = latitude;
+                        currentUser.user_metadata.longitude = longitude;
+                        currentUser.user_metadata.location = location;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                }
+                
+                return { success: true };
+            } catch (error) {
+                console.error('Erro ao atualizar localização localStorage:', error);
+                throw error;
+            }
+        }
+        
+        try {
+            const { data, error } = await this.client
+                .from('profiles')
+                .update({
+                    latitude: latitude,
+                    longitude: longitude,
+                    location: location,
+                    location_updated_at: new Date().toISOString()
+                })
+                .eq('id', userId);
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('Erro ao atualizar localização:', error);
+            throw error;
+        }
+    }
+
+    // Buscar usuários próximos
+    async getNearbyUsers(userId, latitude, longitude, maxDistance = 50) {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage - usar dados mock do app.js
+            return [];
+        }
+        
+        try {
+            const { data, error } = await this.client
+                .rpc('get_nearby_users', {
+                    user_lat: latitude,
+                    user_lon: longitude,
+                    max_distance_km: maxDistance,
+                    exclude_user_id: userId
+                });
+
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('Erro ao buscar usuários próximos:', error);
+            return [];
         }
     }
 }
