@@ -1,4 +1,85 @@
 // Aguardar o carregamento do DOM
+// Função para obter localização do usuário
+async function getUserLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error('Geolocalização não é suportada pelo seu navegador'));
+            return;
+        }
+
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000, // 10 segundos
+            maximumAge: 300000 // 5 minutos
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Buscar endereço usando Nominatim
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
+                        {
+                            headers: {
+                                'User-Agent': 'Fikah-App/1.0'
+                            }
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao buscar endereço');
+                    }
+
+                    const data = await response.json();
+                    const address = data.address || {};
+                    
+                    const location = {
+                        city: address.city || address.town || address.village || 'Cidade não encontrada',
+                        state: address.state || 'Estado não encontrado',
+                        country: address.country || 'País não encontrado',
+                        latitude,
+                        longitude
+                    };
+
+                    // Atualizar localização no Supabase se o usuário estiver logado
+                    if (window.fikahSupabase && window.fikahSupabase.updateUserLocation) {
+                        try {
+                            await window.fikahSupabase.updateUserLocation(latitude, longitude);
+                        } catch (error) {
+                            console.warn('Erro ao atualizar localização no Supabase:', error);
+                        }
+                    }
+
+                    resolve(location);
+                } catch (error) {
+                    console.error('Erro ao processar localização:', error);
+                    reject(new Error('Erro ao obter informações de localização'));
+                }
+            },
+            (error) => {
+                let errorMessage = 'Erro desconhecido ao obter localização';
+                
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'Permissão de localização negada. Por favor, permita o acesso à localização nas configurações do navegador.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Localização não disponível. Verifique se o GPS está ativado.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'Tempo limite para obter localização. Tente novamente.';
+                        break;
+                }
+                
+                reject(new Error(errorMessage));
+            },
+            options
+        );
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
     const loginTab = document.querySelector('[data-tab="login"]');
@@ -37,71 +118,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Função para obter localização automática
     if (getLocationBtn) {
         getLocationBtn.addEventListener('click', async function() {
-            if (navigator.geolocation) {
-                getLocationBtn.textContent = 'Obtendo localização...';
-                getLocationBtn.disabled = true;
+            getLocationBtn.textContent = 'Obtendo localização...';
+            getLocationBtn.disabled = true;
+            
+            try {
+                const location = await getUserLocation();
                 
-                navigator.geolocation.getCurrentPosition(
-                    async function(position) {
-                        // Converter coordenadas em nome de cidade usando API de geocodificação
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        // Usando a API de geocodificação do OpenStreetMap (Nominatim)
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`)
-                            .then(response => response.json())
-                            .then(async data => {
-                                // Tentar obter cidade de vários campos possíveis
-                                const city = data.address.city || 
-                                           data.address.town || 
-                                           data.address.village || 
-                                           data.address.municipality || 
-                                           data.address.county || 
-                                           data.address.suburb ||
-                                           data.address.neighbourhood ||
-                                           data.address.hamlet ||
-                                           data.display_name?.split(',')[0] || '';
-                                           
-                                const state = data.address.state || data.address.region || '';
-                                
-                                // Salvar coordenadas para uso posterior no filtro de proximidade
-                                localStorage.setItem('userLatitude', lat);
-                                localStorage.setItem('userLongitude', lng);
-                                
-                                // Se o usuário estiver logado, atualizar localização no Supabase
-                                const userId = localStorage.getItem('userId');
-                                if (userId && window.fikahSupabase) {
-                                    try {
-                                        await window.fikahSupabase.updateUserLocation(userId, lat, lng, city + (state ? ', ' + state : ''));
-                                        console.log('Localização atualizada no Supabase');
-                                    } catch (error) {
-                                        console.error('Erro ao atualizar localização no Supabase:', error);
-                                    }
-                                }
-                                
-                                locationInput.value = city + (state ? ', ' + state : '');
-                                getLocationBtn.textContent = 'Localização obtida!';
-                                setTimeout(() => {
-                                    getLocationBtn.textContent = 'Obter localização';
-                                    getLocationBtn.disabled = false;
-                                }, 2000);
-                            })
-                            .catch(error => {
-                                // Silenciar erro de API no console
-                                locationInput.value = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
-                                getLocationBtn.textContent = 'Obter localização';
-                                getLocationBtn.disabled = false;
-                            });
-                    },
-                    function(error) {
-                        // Silenciar erro de geolocalização no console
-                        alert('Não foi possível obter sua localização. Por favor, insira manualmente.');
-                        getLocationBtn.textContent = 'Obter localização';
-                        getLocationBtn.disabled = false;
+                // Salvar coordenadas para uso posterior no filtro de proximidade
+                localStorage.setItem('userLatitude', location.latitude);
+                localStorage.setItem('userLongitude', location.longitude);
+                
+                // Se o usuário estiver logado, atualizar localização no Supabase
+                const userId = localStorage.getItem('userId');
+                if (userId && window.fikahSupabase) {
+                    try {
+                        await window.fikahSupabase.updateUserLocation(userId, location.latitude, location.longitude, `${location.city}, ${location.state}`);
+                        console.log('Localização atualizada no Supabase');
+                    } catch (error) {
+                        console.error('Erro ao atualizar localização no Supabase:', error);
                     }
-                );
-            } else {
-                alert('Seu navegador não suporta geolocalização. Por favor, insira sua localização manualmente.');
+                }
+                
+                locationInput.value = `${location.city}, ${location.state}`;
+                
+                if (window.notifications) {
+                    window.notifications.success('Localização obtida com sucesso!');
+                } else {
+                    getLocationBtn.textContent = 'Localização obtida!';
+                    setTimeout(() => {
+                        getLocationBtn.textContent = 'Obter localização';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Erro ao obter localização:', error);
+                
+                if (window.notifications) {
+                    window.notifications.error(error.message);
+                } else {
+                    alert(error.message);
+                }
+            } finally {
+                getLocationBtn.textContent = 'Obter localização';
+                getLocationBtn.disabled = false;
             }
         });
     }
@@ -115,7 +173,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitBtn = this.querySelector('button[type="submit"]');
             
             if (!email || !password) {
-                alert('Por favor, preencha todos os campos.');
+                if (window.notifications) {
+                    window.notifications.error('Por favor, preencha todos os campos.');
+                } else {
+                    alert('Por favor, preencha todos os campos.');
+                }
                 return;
             }
 
@@ -138,6 +200,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem('userName', result.user.user_metadata.name);
                     }
                     
+                    if (window.notifications) {
+                        window.notifications.success('Login realizado com sucesso!');
+                    }
+                    
                     window.location.href = '/app';
                 }
             } catch (error) {
@@ -152,7 +218,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
                 }
                 
-                alert(errorMessage);
+                if (window.notifications) {
+                    window.notifications.error(errorMessage);
+                } else {
+                    alert(errorMessage);
+                }
             } finally {
                 // Restaurar botão
                 submitBtn.textContent = originalText;
@@ -174,13 +244,21 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Verificação de campos obrigatórios
             if (!name || !email || !password || !birthdate || !location) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
+                if (window.notifications) {
+                    window.notifications.error('Por favor, preencha todos os campos obrigatórios.');
+                } else {
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                }
                 return;
             }
 
             // Verificação de confirmação de idade
             if (!ageConfirmation) {
-                alert('Você deve confirmar que é maior de 18 anos para se cadastrar.');
+                if (window.notifications) {
+                    window.notifications.error('Você deve confirmar que é maior de 18 anos para se cadastrar.');
+                } else {
+                    alert('Você deve confirmar que é maior de 18 anos para se cadastrar.');
+                }
                 return;
             }
 
@@ -223,13 +301,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (age < 18) {
-                alert('Você deve ter pelo menos 18 anos para se cadastrar.');
+                if (window.notifications) {
+                    window.notifications.error('Você deve ter pelo menos 18 anos para se cadastrar.');
+                } else {
+                    alert('Você deve ter pelo menos 18 anos para se cadastrar.');
+                }
                 return;
             }
 
             // Validação de senha
             if (password.length < 6) {
-                alert('A senha deve ter pelo menos 6 caracteres.');
+                if (window.notifications) {
+                    window.notifications.error('A senha deve ter pelo menos 6 caracteres.');
+                } else {
+                    alert('A senha deve ter pelo menos 6 caracteres.');
+                }
                 return;
             }
 
@@ -265,7 +351,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('userId', result.user.id);
                     localStorage.setItem('showTrialModal', 'true');
                     
-                    alert('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
+                    if (window.notifications) {
+                        window.notifications.success('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
+                    } else {
+                        alert('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
+                    }
+                    
                     window.location.href = '/app';
                 }
             } catch (error) {
@@ -282,7 +373,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessage = 'Este email já está cadastrado. Tente fazer login.';
                 }
                 
-                alert(errorMessage);
+                if (window.notifications) {
+                    window.notifications.error(errorMessage);
+                } else {
+                    alert(errorMessage);
+                }
             } finally {
                 // Restaurar botão
                 submitBtn.textContent = originalText;
