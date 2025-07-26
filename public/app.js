@@ -2042,10 +2042,18 @@ class FikahApp {
     }
 }
 
-// Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize app when DOM is loaded or immediately if already loaded
+function initializeApp() {
+    console.log('🚀 Inicializando FIKAH App...');
     window.fikahApp = new FikahApp();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    // DOM já está carregado, inicializar imediatamente
+    initializeApp();
+}
 
 // Service Worker Registration (for PWA capabilities)
 if ('serviceWorker' in navigator) {

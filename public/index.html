@@ -528,26 +528,44 @@
     
     <!-- Authentication Check -->
     <script>
+        // Timeout de segurança para remover tela de loading
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainApp = document.getElementById('main-app');
+            
+            if (loadingScreen && loadingScreen.style.display !== 'none') {
+                console.warn('⚠️ Timeout de loading atingido, removendo tela de carregamento');
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    if (mainApp) {
+                        mainApp.classList.remove('hidden');
+                        mainApp.style.opacity = '1';
+                    }
+                }, 500);
+            }
+        }, 10000); // 10 segundos máximo
+        
         // Verificar autenticação antes de carregar o app
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🔐 Verificando autenticação...');
             
-            // Aguardar inicialização do Supabase
-            let attempts = 0;
-            const maxAttempts = 50; // 5 segundos máximo
-            
-            while (!window.fikahSupabase && attempts < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                attempts++;
-            }
-            
-            if (!window.fikahSupabase) {
-                console.error('❌ Supabase não foi inicializado');
-                window.location.href = 'login.html';
-                return;
-            }
-            
             try {
+                // Aguardar inicialização do Supabase
+                let attempts = 0;
+                const maxAttempts = 50; // 5 segundos máximo
+                
+                while (!window.fikahSupabase && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!window.fikahSupabase) {
+                    console.error('❌ Supabase não foi inicializado');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
                 const currentUser = await window.fikahSupabase.getCurrentUser();
                 
                 if (!currentUser || !currentUser.user) {
@@ -568,23 +586,80 @@
                     'app.js'
                 ];
                 
+                let scriptsLoaded = 0;
+                const totalScripts = scripts.length;
+                
                 for (const src of scripts) {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    document.body.appendChild(script);
-                    
-                    // Aguardar carregamento do script
-                    await new Promise((resolve, reject) => {
-                        script.onload = resolve;
-                        script.onerror = reject;
-                    });
+                    try {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        document.body.appendChild(script);
+                        
+                        // Aguardar carregamento do script com timeout
+                        await new Promise((resolve, reject) => {
+                            const timeout = setTimeout(() => {
+                                reject(new Error(`Timeout ao carregar ${src}`));
+                            }, 5000);
+                            
+                            script.onload = () => {
+                                clearTimeout(timeout);
+                                scriptsLoaded++;
+                                console.log(`✅ Script carregado (${scriptsLoaded}/${totalScripts}): ${src}`);
+                                resolve();
+                            };
+                            
+                            script.onerror = () => {
+                                clearTimeout(timeout);
+                                console.warn(`⚠️ Erro ao carregar script: ${src}`);
+                                resolve(); // Continuar mesmo com erro
+                            };
+                        });
+                    } catch (error) {
+                        console.warn(`⚠️ Erro ao carregar script ${src}:`, error);
+                    }
                 }
                 
-                console.log('✅ Scripts do app carregados com sucesso');
+                console.log(`✅ ${scriptsLoaded}/${totalScripts} scripts carregados`);
+                
+                // Aguardar um pouco para garantir que o app.js seja executado
+                setTimeout(() => {
+                    // Se o app não foi inicializado, forçar remoção da tela de loading
+                    const loadingScreen = document.getElementById('loading-screen');
+                    const mainApp = document.getElementById('main-app');
+                    
+                    if (loadingScreen && loadingScreen.style.display !== 'none') {
+                        console.log('🔄 Forçando remoção da tela de loading...');
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                            if (mainApp) {
+                                mainApp.classList.remove('hidden');
+                                mainApp.style.opacity = '1';
+                            }
+                        }, 500);
+                    }
+                }, 3000);
                 
             } catch (error) {
                 console.error('❌ Erro ao verificar autenticação:', error);
-                window.location.href = 'login.html';
+                // Em caso de erro, ainda assim remover a tela de loading
+                const loadingScreen = document.getElementById('loading-screen');
+                const mainApp = document.getElementById('main-app');
+                
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        if (mainApp) {
+                            mainApp.classList.remove('hidden');
+                        }
+                    }, 500);
+                }
+                
+                // Redirecionar para login após um delay
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
             }
         });
     </script>
