@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.notifications.success('Login realizado com sucesso!');
                     }
                     
-                    window.location.href = '/app';
+                    window.location.href = '/';
                 }
             } catch (error) {
                 console.error('Erro no login:', error);
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
                     }
                     
-                    window.location.href = '/app';
+                    window.location.href = '/';
                 }
             } catch (error) {
                 console.error('Erro no cadastro:', error);
@@ -517,5 +517,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
             }
         });
+    }
+    
+    // Verificar se deve abrir a aba de registro baseado no hash da URL
+    if (window.location.hash === '#register') {
+        const loginTab = document.querySelector('[data-tab="login"]');
+        const registerTab = document.querySelector('[data-tab="register"]');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        
+        if (loginTab && registerTab && loginForm && registerForm) {
+            switchTab(registerTab, loginTab, registerForm, loginForm);
+        }
     }
 });
