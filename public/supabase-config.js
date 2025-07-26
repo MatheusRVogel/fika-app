@@ -17,7 +17,15 @@ const SUPABASE_CONFIG = {
 // Exportar configuração para uso global
 window.SUPABASE_CONFIG = SUPABASE_CONFIG;
 
+// IMPORTANTE: Definir as variáveis que o supabase-client.js espera
+window.SUPABASE_URL = SUPABASE_CONFIG.url;
+window.SUPABASE_ANON_KEY = SUPABASE_CONFIG.anonKey;
+
 console.log('✅ Supabase configurado com banco real:', SUPABASE_CONFIG.url);
+console.log('✅ Variáveis globais definidas:', {
+    SUPABASE_URL: window.SUPABASE_URL,
+    SUPABASE_ANON_KEY: window.SUPABASE_ANON_KEY ? 'Definida' : 'Não definida'
+});
 
 // Instruções para configuração:
 /*

@@ -5,51 +5,37 @@ window.supabaseInitializationError = null;
 
 // Função para aguardar o carregamento do Supabase - DEFINIDA IMEDIATAMENTE
 window.waitForSupabaseReady = function(timeout = 15000) {
+    console.log('⏳ waitForSupabaseReady chamada, timeout:', timeout);
+    
     return new Promise((resolve, reject) => {
-        console.log('🔄 waitForSupabaseReady chamada, verificando estado...');
+        // Se já está pronto, resolver imediatamente
+        if (window.fikahSupabase && window.fikahSupabase.initialized) {
+            console.log('✅ Supabase já inicializado, resolvendo imediatamente');
+            resolve(window.fikahSupabase);
+            return;
+        }
         
-        // Se já está pronto, resolve imediatamente
-        if (window.fikahSupabaseReady && window.fikahSupabase) {
-            console.log('✅ Supabase já está pronto!');
-            resolve(window.fikahSupabase);
-            return;
-        }
-
-        // Se houve erro na inicialização, rejeita
-        if (window.supabaseInitializationError) {
-            console.log('❌ Erro na inicialização detectado:', window.supabaseInitializationError);
-            reject(window.supabaseInitializationError);
-            return;
-        }
-
-        console.log(`⏳ Aguardando inicialização do Supabase (timeout: ${timeout}ms)...`);
-
-        // Aguarda o evento de inicialização
-        const timeoutId = setTimeout(() => {
-            console.log('⏰ Timeout aguardando inicialização do Supabase');
-            document.removeEventListener('supabaseReady', handleReady);
-            document.removeEventListener('supabaseError', handleError);
-            reject(new Error('Timeout aguardando inicialização do Supabase'));
-        }, timeout);
-
-        const handleReady = () => {
-            console.log('🎉 Evento supabaseReady recebido!');
-            clearTimeout(timeoutId);
-            document.removeEventListener('supabaseReady', handleReady);
-            document.removeEventListener('supabaseError', handleError);
-            resolve(window.fikahSupabase);
-        };
-
-        const handleError = (event) => {
-            console.log('💥 Evento supabaseError recebido:', event.detail);
-            clearTimeout(timeoutId);
-            document.removeEventListener('supabaseReady', handleReady);
-            document.removeEventListener('supabaseError', handleError);
-            reject(event.detail || new Error('Erro na inicialização do Supabase'));
-        };
-
-        document.addEventListener('supabaseReady', handleReady);
-        document.addEventListener('supabaseError', handleError);
+        let attempts = 0;
+        const maxAttempts = timeout / 100; // Verificar a cada 100ms
+        
+        const checkInterval = setInterval(() => {
+            attempts++;
+            console.log(`🔍 Verificando Supabase (tentativa ${attempts}/${maxAttempts})...`);
+            
+            if (window.fikahSupabase && window.fikahSupabase.initialized) {
+                console.log('✅ Supabase pronto!');
+                clearInterval(checkInterval);
+                resolve(window.fikahSupabase);
+                return;
+            }
+            
+            if (attempts >= maxAttempts) {
+                console.error('❌ Timeout aguardando Supabase');
+                clearInterval(checkInterval);
+                reject(new Error('Timeout aguardando Supabase estar pronto'));
+                return;
+            }
+        }, 100);
     });
 };
 
@@ -85,52 +71,32 @@ function waitForSupabase(timeout = 10000) {
     });
 }
 
-// Função principal de inicialização
+// Função para inicializar Supabase
 async function initializeSupabase() {
+    console.log('🚀 Iniciando inicialização do Supabase...');
+    
     try {
-        console.log('🚀 Iniciando inicialização do Supabase...');
-
-        // Lista de CDNs para tentar
-        const cdnUrls = [
-            'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js',
-            'https://unpkg.com/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js',
-            'https://cdn.skypack.dev/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js'
-        ];
-
-        // Se window.supabase não existe, tenta carregar dinamicamente
-        if (!window.supabase) {
-            console.log('⚠️ window.supabase não encontrado, tentando carregar dinamicamente...');
-            
-            let loaded = false;
-            for (const url of cdnUrls) {
-                try {
-                    console.log(`📦 Tentando carregar: ${url}`);
-                    await loadScript(url);
-                    await waitForSupabase(5000);
-                    loaded = true;
-                    console.log(`✅ Supabase carregado com sucesso de: ${url}`);
-                    break;
-                } catch (error) {
-                    console.warn(`❌ Falha ao carregar de ${url}:`, error);
-                }
-            }
-
-            if (!loaded) {
-                throw new Error('Não foi possível carregar o Supabase de nenhum CDN');
-            }
-        }
-
-        // Aguarda window.supabase estar disponível
-        await waitForSupabase();
-
-        // Verifica se as configurações estão disponíveis
+        // Verificar se as configurações estão disponíveis
         if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
-            throw new Error('Configurações do Supabase não encontradas (SUPABASE_URL ou SUPABASE_ANON_KEY)');
+            console.error('❌ Configurações do Supabase não encontradas');
+            console.log('SUPABASE_URL:', window.SUPABASE_URL);
+            console.log('SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Definida' : 'Não definida');
+            throw new Error('Configurações do Supabase não encontradas');
         }
-
-        console.log('🔧 Criando cliente Supabase...');
-
-        // Cria o cliente Supabase
+        
+        console.log('✅ Configurações encontradas');
+        console.log('URL:', window.SUPABASE_URL);
+        console.log('Key:', window.SUPABASE_ANON_KEY ? 'Definida' : 'Não definida');
+        
+        // Verificar se o Supabase está carregado
+        if (!window.supabase || !window.supabase.createClient) {
+            console.error('❌ Biblioteca Supabase não carregada');
+            throw new Error('Biblioteca Supabase não carregada');
+        }
+        
+        console.log('✅ Biblioteca Supabase carregada');
+        
+        // Criar cliente Supabase
         const supabaseClient = window.supabase.createClient(
             window.SUPABASE_URL,
             window.SUPABASE_ANON_KEY,
@@ -138,44 +104,108 @@ async function initializeSupabase() {
                 auth: {
                     autoRefreshToken: true,
                     persistSession: true,
-                    detectSessionInUrl: true,
-                    flowType: 'pkce'
+                    detectSessionInUrl: true
                 }
             }
         );
-
-        // Testa a conexão
-        console.log('🔍 Testando conexão com Supabase...');
-        const { data, error } = await supabaseClient.auth.getSession();
         
-        if (error && error.message !== 'Auth session missing!') {
-            console.warn('⚠️ Aviso na sessão:', error);
-        }
-
-        // Define as variáveis globais
-        window.fikahSupabase = supabaseClient;
-        window.supabase = window.supabase; // Mantém referência original
-        window.fikahSupabaseReady = true;
-
+        console.log('✅ Cliente Supabase criado');
+        
+        // Criar wrapper com métodos úteis
+        window.fikahSupabase = {
+            client: supabaseClient,
+            initialized: true,
+            
+            // Método para aguardar sessão
+            async waitForSession(timeout = 10000) {
+                console.log('⏳ Aguardando sessão...');
+                
+                return new Promise((resolve) => {
+                    let attempts = 0;
+                    const maxAttempts = timeout / 100;
+                    
+                    const checkSession = async () => {
+                        attempts++;
+                        
+                        try {
+                            const { data: { session }, error } = await supabaseClient.auth.getSession();
+                            
+                            if (session) {
+                                console.log('✅ Sessão encontrada');
+                                resolve(session);
+                                return;
+                            }
+                            
+                            if (attempts >= maxAttempts) {
+                                console.log('⏰ Timeout aguardando sessão');
+                                resolve(null);
+                                return;
+                            }
+                            
+                            setTimeout(checkSession, 100);
+                        } catch (error) {
+                            console.error('❌ Erro ao verificar sessão:', error);
+                            if (attempts >= maxAttempts) {
+                                resolve(null);
+                                return;
+                            }
+                            setTimeout(checkSession, 100);
+                        }
+                    };
+                    
+                    checkSession();
+                });
+            },
+            
+            // Método para obter usuário atual
+            async getCurrentUser() {
+                try {
+                    const { data, error } = await supabaseClient.auth.getUser();
+                    if (error) throw error;
+                    return data;
+                } catch (error) {
+                    console.error('❌ Erro ao obter usuário:', error);
+                    return null;
+                }
+            },
+            
+            // Método para login
+            async signIn(email, password) {
+                try {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+                    if (error) throw error;
+                    return data;
+                } catch (error) {
+                    console.error('❌ Erro no login:', error);
+                    throw error;
+                }
+            },
+            
+            // Método para logout
+            async signOut() {
+                try {
+                    const { error } = await supabaseClient.auth.signOut();
+                    if (error) throw error;
+                    return true;
+                } catch (error) {
+                    console.error('❌ Erro no logout:', error);
+                    throw error;
+                }
+            }
+        };
+        
         console.log('✅ Supabase inicializado com sucesso!');
-        console.log('📊 Cliente:', supabaseClient);
-
-        // Dispara evento de sucesso
-        document.dispatchEvent(new CustomEvent('supabaseReady', {
-            detail: supabaseClient
-        }));
-
-        return supabaseClient;
-
+        return window.fikahSupabase;
+        
     } catch (error) {
-        console.error('❌ Erro na inicialização do Supabase:', error);
-        window.supabaseInitializationError = error;
-        
-        // Dispara evento de erro
-        document.dispatchEvent(new CustomEvent('supabaseError', {
-            detail: error
-        }));
-        
+        console.error('❌ Erro ao inicializar Supabase:', error);
+        window.fikahSupabase = {
+            initialized: false,
+            error: error.message
+        };
         throw error;
     }
 }
@@ -291,36 +321,36 @@ class SupabaseClient {
     }
 }
 
-// Inicialização automática
-(function() {
-    console.log('🎯 Iniciando inicialização automática do Supabase...');
+// Tentar inicializar imediatamente se as configurações estão disponíveis
+if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase) {
+    console.log('🚀 Configurações disponíveis, inicializando imediatamente...');
+    initializeSupabase().catch(error => {
+        console.error('❌ Erro na inicialização imediata:', error);
+    });
+} else {
+    console.log('⏳ Aguardando configurações e biblioteca...');
     
-    // Tenta inicializar imediatamente se window.supabase já existe
-    if (window.supabase) {
-        initializeSupabase().catch(error => {
-            console.error('Erro na inicialização imediata:', error);
-        });
-    } else {
-        // Aguarda um pouco e tenta novamente
+    // Aguardar DOM e tentar novamente
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('📄 DOM carregado, tentando inicializar...');
+        
+        // Aguardar um pouco para garantir que todos os scripts carregaram
         setTimeout(() => {
-            initializeSupabase().catch(error => {
-                console.error('Erro na inicialização com delay:', error);
-            });
-        }, 1000);
-    }
-
-    // Fallback: tenta inicializar quando o DOM estiver pronto
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!window.fikahSupabaseReady) {
+            if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase) {
+                console.log('🚀 Inicializando após DOM...');
                 initializeSupabase().catch(error => {
-                    console.error('Erro na inicialização no DOMContentLoaded:', error);
+                    console.error('❌ Erro na inicialização após DOM:', error);
                 });
+            } else {
+                console.error('❌ Configurações ainda não disponíveis após DOM');
+                console.log('SUPABASE_URL:', window.SUPABASE_URL);
+                console.log('SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Definida' : 'Não definida');
+                console.log('supabase:', window.supabase ? 'Carregado' : 'Não carregado');
             }
-        });
-    }
-})();
+        }, 500);
+    });
+}
 
-// Exporta para compatibilidade
-window.SupabaseClient = SupabaseClient;
+// Expor função de inicialização para uso manual
 window.initializeSupabase = initializeSupabase;
+window.SupabaseClient = SupabaseClient;

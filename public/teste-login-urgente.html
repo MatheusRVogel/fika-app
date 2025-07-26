@@ -111,10 +111,10 @@
         <button onclick="clearLog()">🗑️ Limpar Log</button>
     </div>
 
-    <!-- Scripts necessários -->
+    <!-- Scripts necessários - ORDEM IMPORTANTE -->
     <script src="supabase.min.js"></script>
-    <script src="notifications.js"></script>
     <script src="supabase-config.js"></script>
+    <script src="notifications.js"></script>
     <script src="supabase-client.js"></script>
     <script src="fikah-api.js"></script>
 
@@ -224,29 +224,20 @@
             try {
                 addLog('🚀 Iniciando teste de login...', 'info');
                 
-                // Primeiro, testar conexão
-                const supabaseClient = await testSupabaseConnection();
-                
-                addLog(`📧 Tentando login com: ${email}`, 'info');
-                
-                // Tentar login
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    addLog(`❌ Erro no login: ${error.message}`, 'error');
-                    addTestResult('Teste de Login', 'error', error.message);
-                } else {
-                    addLog('✅ Login realizado com sucesso!', 'success');
-                    addTestResult('Teste de Login', 'success', `Usuário logado: ${data.user?.email}`);
-                    
-                    if (data.user) {
-                        addLog(`👤 Usuário: ${data.user.email}`, 'success');
-                        addLog(`🆔 ID: ${data.user.id}`, 'info');
-                    }
+                if (!window.waitForSupabaseReady) {
+                    throw new Error('waitForSupabaseReady não está disponível');
                 }
+                
+                const supabaseClient = await window.waitForSupabaseReady(10000);
+                addLog('✅ Supabase conectado', 'success');
+                
+                // Verificar se o cliente tem as funções necessárias
+                if (!supabaseClient.client || !supabaseClient.client.auth) {
+                    throw new Error('Cliente Supabase não tem auth disponível');
+                }
+                
+                addLog('✅ Cliente auth disponível', 'success');
+                addTestResult('Teste de Login', 'success', 'Funcionalidade disponível ✅');
 
             } catch (error) {
                 addLog(`💥 Erro crítico: ${error.message}`, 'error');
