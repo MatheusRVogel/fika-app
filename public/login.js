@@ -9,7 +9,7 @@ async function getUserLocation() {
 
         const options = {
             enableHighAccuracy: true,
-            timeout: 10000, // 10 segundos
+            timeout: 15000, // 15 segundos
             maximumAge: 300000 // 5 minutos
         };
 
@@ -18,30 +18,99 @@ async function getUserLocation() {
                 try {
                     const { latitude, longitude } = position.coords;
                     
-                    // Buscar endereço usando Nominatim
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
-                        {
-                            headers: {
-                                'User-Agent': 'Fikah-App/1.0'
-                            }
-                        }
-                    );
-
-                    if (!response.ok) {
-                        throw new Error('Erro ao buscar endereço');
-                    }
-
-                    const data = await response.json();
-                    const address = data.address || {};
+                    // Tentar diferentes níveis de zoom para obter melhor precisão
+                    const zoomLevels = [18, 16, 14, 12, 10];
+                    let bestLocation = null;
                     
-                    const location = {
-                        city: address.city || address.town || address.village || 'Cidade não encontrada',
-                        state: address.state || 'Estado não encontrado',
-                        country: address.country || 'País não encontrado',
-                        latitude,
-                        longitude
-                    };
+                    for (const zoom of zoomLevels) {
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=${zoom}&addressdetails=1&accept-language=pt-BR,pt,en`,
+                                {
+                                    headers: {
+                                        'User-Agent': 'Fikah-App/1.0'
+                                    }
+                                }
+                            );
+
+                            if (!response.ok) continue;
+
+                            const data = await response.json();
+                            const address = data.address || {};
+                            
+                            // Tentar diferentes campos para cidade
+                            const city = address.city || 
+                                        address.town || 
+                                        address.village || 
+                                        address.municipality || 
+                                        address.suburb ||
+                                        address.neighbourhood ||
+                                        address.hamlet ||
+                                        address.county;
+                            
+                            const state = address.state || 
+                                         address.region || 
+                                         address['ISO3166-2-lvl4'];
+                            
+                            if (city && city !== 'Cidade não encontrada') {
+                                bestLocation = {
+                                    city: city,
+                                    state: state || 'Estado não encontrado',
+                                    country: address.country || 'Brasil',
+                                    latitude,
+                                    longitude,
+                                    fullAddress: data.display_name || `${city}, ${state}`
+                                };
+                                break; // Encontrou uma boa localização, sair do loop
+                            }
+                        } catch (error) {
+                            console.warn(`Erro no zoom ${zoom}:`, error);
+                            continue;
+                        }
+                    }
+                    
+                    // Se não encontrou cidade específica, usar informações gerais
+                    if (!bestLocation) {
+                        // Fazer uma última tentativa com uma API alternativa ou usar coordenadas
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1&accept-language=pt-BR,pt,en`,
+                                {
+                                    headers: {
+                                        'User-Agent': 'Fikah-App/1.0'
+                                    }
+                                }
+                            );
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                const address = data.address || {};
+                                
+                                bestLocation = {
+                                    city: address.state || address.region || 'Localização atual',
+                                    state: address.country || 'Brasil',
+                                    country: 'Brasil',
+                                    latitude,
+                                    longitude,
+                                    fullAddress: data.display_name || `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+                                };
+                            }
+                        } catch (error) {
+                            console.warn('Erro na última tentativa:', error);
+                        }
+                    }
+                    
+                    // Se ainda não encontrou nada, usar coordenadas
+                    if (!bestLocation) {
+                        bestLocation = {
+                            city: `Lat: ${latitude.toFixed(4)}`,
+                            state: `Lon: ${longitude.toFixed(4)}`,
+                            country: 'Brasil',
+                            latitude,
+                            longitude,
+                            fullAddress: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+                        };
+                    }
 
                     // Atualizar localização no Supabase se o usuário estiver logado
                     if (window.fikahSupabase && window.fikahSupabase.updateUserLocation) {
@@ -52,7 +121,7 @@ async function getUserLocation() {
                         }
                     }
 
-                    resolve(location);
+                    resolve(bestLocation);
                 } catch (error) {
                     console.error('Erro ao processar localização:', error);
                     reject(new Error('Erro ao obter informações de localização'));
