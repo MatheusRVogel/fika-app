@@ -18,17 +18,19 @@ async function getUserLocation() {
                 try {
                     const { latitude, longitude } = position.coords;
                     
-                    // Tentar diferentes níveis de zoom para obter melhor precisão
+                    // Tentar diferentes níveis de zoom para máxima precisão
                     const zoomLevels = [18, 16, 14, 12, 10];
                     let bestLocation = null;
                     
                     for (const zoom of zoomLevels) {
                         try {
+                            // Usar parâmetros adicionais para melhor precisão
                             const response = await fetch(
-                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=${zoom}&addressdetails=1&accept-language=pt-BR,pt,en`,
+                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=${zoom}&addressdetails=1&extratags=1&namedetails=1&accept-language=pt-BR,pt,en&countrycodes=br`,
                                 {
                                     headers: {
-                                        'User-Agent': 'Fikah-App/1.0'
+                                        'User-Agent': 'Fikah-App/1.0',
+                                        'Accept': 'application/json'
                                     }
                                 }
                             );
@@ -38,29 +40,40 @@ async function getUserLocation() {
                             const data = await response.json();
                             const address = data.address || {};
                             
-                            // Tentar diferentes campos para cidade
+                            // Tentar diferentes campos para cidade com prioridade específica
                             const city = address.city || 
                                         address.town || 
-                                        address.village || 
                                         address.municipality || 
+                                        address.village || 
                                         address.suburb ||
                                         address.neighbourhood ||
                                         address.hamlet ||
-                                        address.county;
+                                        address.county ||
+                                        address.state_district;
                             
                             const state = address.state || 
                                          address.region || 
                                          address['ISO3166-2-lvl4'];
                             
-                            if (city && city !== 'Cidade não encontrada') {
+                            // Log para debug
+                            console.log(`Zoom ${zoom} - Dados recebidos:`, {
+                                city: city,
+                                state: state,
+                                address: address,
+                                display_name: data.display_name
+                            });
+                            
+                            if (city && city !== 'Cidade não encontrada' && city.length > 2) {
                                 bestLocation = {
                                     city: city,
                                     state: state || 'Estado não encontrado',
                                     country: address.country || 'Brasil',
                                     latitude,
                                     longitude,
-                                    fullAddress: data.display_name || `${city}, ${state}`
+                                    fullAddress: data.display_name || `${city}, ${state}`,
+                                    zoom: zoom // Para debug
                                 };
+                                console.log(`Localização encontrada no zoom ${zoom}:`, bestLocation);
                                 break; // Encontrou uma boa localização, sair do loop
                             }
                         } catch (error) {

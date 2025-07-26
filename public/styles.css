@@ -1517,14 +1517,16 @@ html, body {
 /* Responsividade para login */
 @media (max-width: 768px) {
     #auth-screen {
-        padding: 30px 15px 15px;
+        padding: 30px 15px 60px; /* Aumentado padding inferior */
         align-items: flex-start;
         padding-top: 50px;
+        min-height: 100vh;
+        padding-bottom: max(60px, env(safe-area-inset-bottom, 60px)); /* Suporte para safe area */
     }
     
     #auth-screen .container {
-        padding: 25px 20px;
-        margin: 0;
+        padding: 25px 20px 30px; /* Aumentado padding inferior */
+        margin: 0 0 40px 0; /* Adicionado margin inferior */
         max-height: none;
         border-radius: 15px;
     }
@@ -1553,17 +1555,25 @@ html, body {
     .tabs {
         margin-bottom: 20px;
     }
+    
+    /* Garantir espaço extra para o último botão */
+    .btn-primary:last-child {
+        margin-bottom: 30px;
+    }
 }
 
 @media (max-width: 480px) {
     #auth-screen {
-        padding: 20px 10px 10px;
+        padding: 20px 10px 80px; /* Aumentado ainda mais o padding inferior */
         padding-top: 40px;
+        min-height: 100vh;
+        padding-bottom: max(80px, env(safe-area-inset-bottom, 80px)); /* Suporte para safe area */
     }
     
     #auth-screen .container {
-        padding: 20px 15px;
+        padding: 20px 15px 40px; /* Aumentado padding inferior */
         border-radius: 12px;
+        margin: 0 0 50px 0; /* Adicionado margin inferior maior */
     }
     
     #auth-screen .logo h1 {
@@ -1583,5 +1593,10 @@ html, body {
     .tab-btn {
         padding: 10px 12px;
         font-size: 13px;
+    }
+    
+    /* Garantir espaço extra para o último botão em telas pequenas */
+    .btn-primary:last-child {
+        margin-bottom: 40px;
     }
 }
