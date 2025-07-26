@@ -66,8 +66,8 @@
                     <a href="#sobre" class="text-white/80 hover:text-white transition-colors">Sobre</a>
                 </nav>
                 <div class="flex items-center space-x-4">
-                    <a href="login.html" class="text-white/80 hover:text-white transition-colors">Entrar</a>
-                    <a href="login.html" class="bg-white text-fika-purple px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                    <a href="./login.html" class="text-white/80 hover:text-white transition-colors">Entrar</a>
+                    <a href="./login.html" class="bg-white text-fika-purple px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
                         Cadastrar
                     </a>
                 </div>
@@ -95,7 +95,7 @@
                     </div>
                     
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="login.html" class="bg-white text-fika-purple px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 text-center">
+                        <a href="./login.html" class="bg-white text-fika-purple px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 text-center">
                             Começar agora →
                         </a>
                         <button class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-fika-purple transition-all">
@@ -200,9 +200,9 @@
                     <div class="w-16 h-16 bg-gradient-to-br from-fika-purple to-fika-pink rounded-2xl flex items-center justify-center mb-6">
                         <span class="text-white text-2xl">💬</span>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Chat Inovador</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Chat Inteligente</h3>
                     <p class="text-gray-600">
-                        Quebra-gelos personalizados, chamadas de vídeo seguras e jogos interativos para conhecer melhor.
+                        Quebra-gelos personalizados e jogos interativos para conhecer melhor seus matches.
                     </p>
                 </div>
             </div>
@@ -219,19 +219,83 @@
                 </p>
             </div>
             
-            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Plano Gratuito -->
+                <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-fika-purple transition-colors">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Plano Gratuito</h3>
+                        <div class="text-5xl font-bold text-gray-600 mb-2">R$ 0</div>
+                        <p class="text-gray-600">para sempre</p>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8 text-sm">
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Perfil básico</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Receber mensagens no chat</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-orange-500 mr-3">⚠</span>
+                            <span>Responder apenas 5 mensagens/dia</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-red-500 mr-3">✗</span>
+                            <span>Não pode iniciar conversas</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Curtir e comentar posts</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-orange-500 mr-3">⚠</span>
+                            <span>Máximo 5 posts/stories por dia</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-red-500 mr-3">✗</span>
+                            <span>Não vê quem visitou o perfil</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-red-500 mr-3">✗</span>
+                            <span>Não vê quem curtiu você</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="./login.html" class="w-full bg-gray-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-gray-700 transition-colors block text-center">
+                        Começar Grátis
+                    </a>
+                </div>
+                
                 <!-- Plano Mensal -->
                 <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-fika-purple transition-colors">
                     <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Plano Mensal</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Plano Premium</h3>
                         <div class="text-5xl font-bold text-fika-purple mb-2">R$ 24,90</div>
                         <p class="text-gray-600">por mês</p>
                     </div>
                     
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-3 mb-8 text-sm">
                         <li class="flex items-center">
                             <span class="text-green-500 mr-3">✓</span>
-                            <span>Matches ilimitados</span>
+                            <span>Chat completo (enviar e receber)</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Iniciar conversas ilimitadas</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Posts e stories ilimitados</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Ver quem curtiu você</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Ver quem visitou seu perfil</span>
                         </li>
                         <li class="flex items-center">
                             <span class="text-green-500 mr-3">✓</span>
@@ -239,15 +303,11 @@
                         </li>
                         <li class="flex items-center">
                             <span class="text-green-500 mr-3">✓</span>
-                            <span>Chat sem limitações</span>
-                        </li>
-                        <li class="flex items-center">
-                            <span class="text-green-500 mr-3">✓</span>
                             <span>Verificação de perfil</span>
                         </li>
                     </ul>
                     
-                    <a href="login.html" class="w-full bg-fika-purple text-white py-4 rounded-xl font-semibold text-lg hover:bg-fika-purple-dark transition-colors block text-center">
+                    <a href="./login.html" class="w-full bg-fika-purple text-white py-4 rounded-xl font-semibold text-lg hover:bg-fika-purple-dark transition-colors block text-center">
                         Começar agora
                     </a>
                 </div>
@@ -259,16 +319,28 @@
                     </div>
                     
                     <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold mb-2">Plano Anual</h3>
+                        <h3 class="text-2xl font-bold mb-2">Premium Anual</h3>
                         <div class="text-5xl font-bold mb-2">R$ 19,90</div>
                         <p class="text-white/80">por mês (cobrado anualmente)</p>
                         <p class="text-sm text-yellow-300 mt-2">Economize 20%</p>
                     </div>
                     
-                    <ul class="space-y-4 mb-8">
+                    <ul class="space-y-3 mb-8 text-sm">
                         <li class="flex items-center">
                             <span class="text-yellow-300 mr-3">✓</span>
-                            <span>Tudo do plano mensal</span>
+                            <span>Todos os recursos Premium</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Chat completo (enviar e receber)</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Posts e stories ilimitados</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Ver quem curtiu e visitou você</span>
                         </li>
                         <li class="flex items-center">
                             <span class="text-yellow-300 mr-3">✓</span>
@@ -284,7 +356,7 @@
                         </li>
                     </ul>
                     
-                    <a href="login.html" class="w-full bg-white text-fika-purple py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors block text-center">
+                    <a href="./login.html" class="w-full bg-white text-fika-purple py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors block text-center">
                         Economizar 20%
                     </a>
                 </div>

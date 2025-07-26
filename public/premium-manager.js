@@ -2,13 +2,10 @@
 class PremiumManager {
     constructor() {
         this.isPremium = false;
-        // Usuários gratuitos podem curtir, seguir e comentar livremente
-        // Apenas iniciar chats é restrito ao Premium
+        this.freeUserLimits = new FreeUserLimits();
+        
+        // Usuários gratuitos têm limitações específicas
         this.dailyLimits = {
-            // Removidos os limites de likes - agora são ilimitados para todos
-            // likes: Infinity,
-            // superLikes: Infinity,
-            // Apenas conversas iniciadas são limitadas
             initiatedChats: 0  // Usuários gratuitos não podem iniciar chats
         };
         this.usage = this.loadDailyUsage();
@@ -51,14 +48,17 @@ class PremiumManager {
     setPremiumStatus(isPremium) {
         this.isPremium = isPremium;
         console.log(`Status premium atualizado: ${isPremium ? 'Premium' : 'Gratuito'}`);
+        
+        // Atualizar contadores na interface
+        this.freeUserLimits.updateUsageCounters(isPremium);
     }
 
-    // Verificar se pode dar like (agora sempre permitido)
+    // Verificar se pode dar like (sempre permitido)
     canLike() {
         return { allowed: true };
     }
 
-    // Verificar se pode dar super like (agora sempre permitido)
+    // Verificar se pode dar super like (sempre permitido)
     canSuperLike() {
         return { allowed: true };
     }
@@ -73,20 +73,39 @@ class PremiumManager {
         return { allowed: true };
     }
 
+    // Verificar se pode enviar mensagem (limitado para usuários gratuitos)
+    canSendMessage() {
+        return this.freeUserLimits.canSendMessage(this.isPremium);
+    }
+
+    // Verificar se pode criar post (limitado para usuários gratuitos)
+    canCreatePost() {
+        return this.freeUserLimits.canCreatePost(this.isPremium);
+    }
+
+    // Verificar se pode criar story (limitado para usuários gratuitos)
+    canCreateStory() {
+        return this.freeUserLimits.canCreateStory(this.isPremium);
+    }
+
     // Verificar se pode iniciar nova conversa (apenas Premium)
     canStartConversation() {
-        if (this.isPremium) return { allowed: true };
-        
-        return {
-            allowed: false,
-            reason: 'premium_only',
-            message: 'Iniciar conversas é uma funcionalidade Premium! Você pode responder a mensagens recebidas gratuitamente.'
-        };
+        return this.freeUserLimits.canStartConversation(this.isPremium);
     }
 
     // Verificar se pode responder mensagem (sempre permitido)
     canReplyToMessage() {
         return { allowed: true };
+    }
+
+    // Verificar se pode ver quem visitou o perfil (apenas Premium)
+    canSeeProfileVisitors() {
+        return this.freeUserLimits.canSeeProfileVisitors(this.isPremium);
+    }
+
+    // Verificar se pode ver quem curtiu (apenas Premium)
+    canSeeWhoLiked() {
+        return this.freeUserLimits.canSeeWhoLiked(this.isPremium);
     }
 
     // Verificar funcionalidades exclusivas premium
@@ -96,11 +115,15 @@ class PremiumManager {
         const premiumFeatures = {
             'start_chat': 'Iniciar conversas é uma funcionalidade Premium! Você pode responder a mensagens recebidas.',
             'who_liked_me': 'Ver quem curtiu você é uma funcionalidade Premium!',
+            'who_visited_me': 'Ver quem visitou seu perfil é uma funcionalidade Premium!',
             'boost_profile': 'Impulsionar perfil é uma funcionalidade Premium!',
             'global_location': 'Localização global é uma funcionalidade Premium!',
             'advanced_filters': 'Filtros avançados são uma funcionalidade Premium!',
             'read_receipts': 'Confirmação de leitura é uma funcionalidade Premium!',
-            'unlimited_rewind': 'Desfazer curtidas é uma funcionalidade Premium!'
+            'unlimited_rewind': 'Desfazer curtidas é uma funcionalidade Premium!',
+            'unlimited_posts': 'Posts ilimitados são uma funcionalidade Premium!',
+            'unlimited_stories': 'Stories ilimitados são uma funcionalidade Premium!',
+            'unlimited_messages': 'Mensagens ilimitadas são uma funcionalidade Premium!'
         };
         
         return {
@@ -122,6 +145,30 @@ class PremiumManager {
         return;
     }
 
+    // Registrar envio de mensagem
+    recordMessage() {
+        if (!this.isPremium) {
+            this.freeUserLimits.recordMessage();
+            this.freeUserLimits.updateUsageCounters(this.isPremium);
+        }
+    }
+
+    // Registrar criação de post
+    recordPost() {
+        if (!this.isPremium) {
+            this.freeUserLimits.recordPost();
+            this.freeUserLimits.updateUsageCounters(this.isPremium);
+        }
+    }
+
+    // Registrar criação de story
+    recordStory() {
+        if (!this.isPremium) {
+            this.freeUserLimits.recordStory();
+            this.freeUserLimits.updateUsageCounters(this.isPremium);
+        }
+    }
+
     // Registrar nova conversa iniciada
     recordNewConversation() {
         if (!this.isPremium) {
@@ -139,6 +186,8 @@ class PremiumManager {
             };
         }
 
+        const freeStats = this.freeUserLimits.getUsageStats(this.isPremium);
+        
         return {
             isPremium: false,
             likes: {
@@ -151,53 +200,22 @@ class PremiumManager {
                 limit: 'Ilimitado', 
                 remaining: 'Ilimitado'
             },
+            messages: freeStats.messages,
+            posts: freeStats.posts,
+            stories: freeStats.stories,
             chats: {
                 canInitiate: false,
                 canReply: true,
                 message: 'Você pode responder mensagens, mas não iniciar conversas'
-            }
+            },
+            features: freeStats.features
         };
     }
 
     // Mostrar modal de upgrade
     showUpgradeModal(reason, message) {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay upgrade-modal';
-        modal.innerHTML = `
-            <div class="modal-content upgrade-modal-content">
-                <div class="modal-header">
-                    <h2>🚀 Upgrade para Premium</h2>
-                    <button class="close-modal">×</button>
-                </div>
-                <div class="modal-body">
-                    <div class="upgrade-message">
-                        <div class="upgrade-icon">⭐</div>
-                        <p>${message}</p>
-                    </div>
-                    
-                    <div class="premium-benefits">
-                        <h3>Com o Premium você tem:</h3>
-                        <div class="benefit-list">
-                            <div class="benefit-item">
-                                <span class="benefit-icon">💖</span>
-                                <span>Curtidas ilimitadas</span>
-                            </div>
-                            <div class="benefit-item">
-                                <span class="benefit-icon">🔥</span>
-                                <span>Super Likes ilimitados</span>
-                            </div>
-                            <div class="benefit-item">
-                                <span class="benefit-icon">💬</span>
-                                <span>Conversas ilimitadas</span>
-                            </div>
-                            <div class="benefit-item">
-                                <span class="benefit-icon">👑</span>
-                                <span>Perfil em destaque</span>
-                            </div>
-                            <div class="benefit-item">
-                                <span class="benefit-icon">🌍</span>
-                                <span>Localização global</span>
-                            </div>
+        this.freeUserLimits.showUpgradeModal(reason, message);
+    }
                             <div class="benefit-item">
                                 <span class="benefit-icon">👀</span>
                                 <span>Ver quem curtiu você</span>

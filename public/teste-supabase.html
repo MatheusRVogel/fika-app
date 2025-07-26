@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Supabase - Fika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Conectividade Supabase - Fika</h1>
+        
+        <div class="test-section">
+            <h3>1. Status da Conexão</h3>
+            <div id="connection-status" class="status info">Verificando conexão...</div>
+            <button onclick="testConnection()">Testar Conexão</button>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Teste de Autenticação</h3>
+            <div id="auth-status" class="status info">Aguardando teste...</div>
+            <button onclick="testAuth()">Testar Autenticação</button>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Teste de Tabelas</h3>
+            <div id="tables-status" class="status info">Aguardando teste...</div>
+            <button onclick="testTables()">Verificar Tabelas</button>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Teste de Inserção</h3>
+            <div id="insert-status" class="status info">Aguardando teste...</div>
+            <button onclick="testInsert()">Testar Inserção</button>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Logs de Debug</h3>
+            <pre id="debug-logs">Logs aparecerão aqui...</pre>
+            <button onclick="clearLogs()">Limpar Logs</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuração do Supabase
+        const supabaseUrl = 'https://kujhzettkaitekulvhqt.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8';
+        
+        let supabase;
+        
+        function log(message) {
+            const debugLogs = document.getElementById('debug-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            debugLogs.textContent += `[${timestamp}] ${message}\n`;
+            debugLogs.scrollTop = debugLogs.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('debug-logs').textContent = 'Logs aparecerão aqui...\n';
+        }
+
+        function updateStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        async function testConnection() {
+            try {
+                log('Iniciando teste de conexão...');
+                
+                // Tentar inicializar o cliente Supabase
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                log('Cliente Supabase criado com sucesso');
+                
+                // Testar uma operação simples
+                const { data, error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                updateStatus('connection-status', '✅ Conexão estabelecida com sucesso!', 'success');
+                log('Conexão com Supabase estabelecida com sucesso');
+                
+            } catch (error) {
+                updateStatus('connection-status', `❌ Erro na conexão: ${error.message}`, 'error');
+                log(`Erro na conexão: ${error.message}`);
+            }
+        }
+
+        async function testAuth() {
+            if (!supabase) {
+                updateStatus('auth-status', '❌ Execute o teste de conexão primeiro', 'error');
+                return;
+            }
+
+            try {
+                log('Testando autenticação...');
+                
+                // Tentar obter usuário atual
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error && error.message !== 'Invalid JWT') {
+                    throw error;
+                }
+                
+                if (user) {
+                    updateStatus('auth-status', `✅ Usuário autenticado: ${user.email}`, 'success');
+                    log(`Usuário autenticado: ${user.email}`);
+                } else {
+                    updateStatus('auth-status', '✅ Sistema de autenticação funcionando (nenhum usuário logado)', 'success');
+                    log('Sistema de autenticação funcionando - nenhum usuário logado');
+                }
+                
+            } catch (error) {
+                updateStatus('auth-status', `❌ Erro na autenticação: ${error.message}`, 'error');
+                log(`Erro na autenticação: ${error.message}`);
+            }
+        }
+
+        async function testTables() {
+            if (!supabase) {
+                updateStatus('tables-status', '❌ Execute o teste de conexão primeiro', 'error');
+                return;
+            }
+
+            try {
+                log('Verificando tabelas...');
+                
+                const tables = ['profiles', 'likes', 'matches', 'messages', 'stories'];
+                const results = [];
+                
+                for (const table of tables) {
+                    try {
+                        const { data, error } = await supabase.from(table).select('*').limit(1);
+                        if (error) {
+                            results.push(`❌ ${table}: ${error.message}`);
+                            log(`Erro na tabela ${table}: ${error.message}`);
+                        } else {
+                            results.push(`✅ ${table}: OK`);
+                            log(`Tabela ${table}: OK`);
+                        }
+                    } catch (err) {
+                        results.push(`❌ ${table}: ${err.message}`);
+                        log(`Erro na tabela ${table}: ${err.message}`);
+                    }
+                }
+                
+                const allOk = results.every(r => r.includes('✅'));
+                const message = results.join(', ');
+                
+                updateStatus('tables-status', 
+                    allOk ? `✅ Todas as tabelas OK: ${message}` : `⚠️ Algumas tabelas com problemas: ${message}`, 
+                    allOk ? 'success' : 'error'
+                );
+                
+            } catch (error) {
+                updateStatus('tables-status', `❌ Erro ao verificar tabelas: ${error.message}`, 'error');
+                log(`Erro ao verificar tabelas: ${error.message}`);
+            }
+        }
+
+        async function testInsert() {
+            if (!supabase) {
+                updateStatus('insert-status', '❌ Execute o teste de conexão primeiro', 'error');
+                return;
+            }
+
+            try {
+                log('Testando inserção de dados...');
+                
+                // Tentar inserir um perfil de teste
+                const testProfile = {
+                    id: 'test-user-' + Date.now(),
+                    name: 'Usuário Teste',
+                    age: 25,
+                    location: 'São Paulo, SP',
+                    bio: 'Perfil de teste criado automaticamente',
+                    interests: ['tecnologia', 'música'],
+                    photos: [],
+                    is_premium: false
+                };
+                
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .insert([testProfile])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                updateStatus('insert-status', '✅ Inserção de dados funcionando!', 'success');
+                log('Inserção de dados funcionando - perfil de teste criado');
+                
+                // Limpar o perfil de teste
+                await supabase.from('profiles').delete().eq('id', testProfile.id);
+                log('Perfil de teste removido');
+                
+            } catch (error) {
+                updateStatus('insert-status', `❌ Erro na inserção: ${error.message}`, 'error');
+                log(`Erro na inserção: ${error.message}`);
+            }
+        }
+
+        // Executar teste de conexão automaticamente
+        window.onload = function() {
+            log('Página carregada - iniciando testes automáticos...');
+            setTimeout(testConnection, 1000);
+        };
+    </script>
+</body>
+</html>

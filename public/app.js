@@ -379,6 +379,24 @@ class FikahApp {
             this.showCreatePostModal();
         });
 
+        // Premium features
+        document.getElementById('who-liked-btn')?.addEventListener('click', () => {
+            this.showWhoLikedModal();
+        });
+
+        document.getElementById('profile-visitors-btn')?.addEventListener('click', () => {
+            this.showProfileVisitorsModal();
+        });
+
+        // Premium modal
+        document.getElementById('premium-cancel-btn')?.addEventListener('click', () => {
+            this.hidePremiumModal();
+        });
+
+        document.getElementById('premium-upgrade-btn')?.addEventListener('click', () => {
+            this.showPremiumModal();
+        });
+
         // Filter menu toggle
         const filterMenuBtn = document.getElementById('filter-menu-btn');
         const exploreFilters = document.getElementById('explore-filters');
@@ -536,6 +554,14 @@ class FikahApp {
                 this.openStory(storyId);
             });
         });
+
+        // Add story functionality
+        const addStoryBtn = document.querySelector('.add-story');
+        if (addStoryBtn) {
+            addStoryBtn.addEventListener('click', () => {
+                this.showCreateStoryModal();
+            });
+        }
 
         // Story viewer close
         const closeStoryBtn = document.getElementById('close-story');
@@ -816,20 +842,28 @@ class FikahApp {
         const text = messageInput.value.trim();
         if (!text) return;
 
-        // Para usuários não premium, verificar se é uma resposta ou nova conversa
-        // Se há mensagens no container, é uma resposta (permitida)
-        // Se não há mensagens, é uma nova conversa (bloqueada para usuários gratuitos)
+        // Para usuários não premium, verificar limitações
         if (!this.premiumManager.isPremium) {
             const existingMessages = messagesContainer.querySelectorAll('.message');
+            
             if (existingMessages.length === 0) {
-                // Tentativa de iniciar nova conversa
-                const canStart = this.premiumManager.canStartConversation();
-                if (!canStart.allowed) {
-                    this.premiumManager.showUpgradeModal(canStart.reason, canStart.message);
+                // Tentativa de iniciar nova conversa - bloqueada para usuários gratuitos
+                this.premiumManager.showUpgradeModal(
+                    'Recurso Premium',
+                    'Usuários gratuitos não podem iniciar conversas. Você pode apenas responder mensagens recebidas.'
+                );
+                return;
+            } else {
+                // Verificar limite de mensagens diárias para respostas
+                const canSend = this.premiumManager.canSendMessage();
+                if (!canSend.allowed) {
+                    this.premiumManager.showUpgradeModal(canSend.reason, canSend.message);
                     return;
                 }
+                
+                // Registrar mensagem enviada
+                this.premiumManager.recordMessage();
             }
-            // Se há mensagens existentes, é uma resposta - permitida para todos
         }
 
         const message = {
@@ -1438,6 +1472,15 @@ class FikahApp {
     }
 
     showCreatePostModal() {
+        // Verificar se usuário gratuito pode criar post
+        if (!this.premiumManager.isPremium) {
+            const canCreate = this.premiumManager.canCreatePost();
+            if (!canCreate.allowed) {
+                this.premiumManager.showUpgradeModal(canCreate.reason, canCreate.message);
+                return;
+            }
+        }
+
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.innerHTML = `
@@ -1494,6 +1537,11 @@ class FikahApp {
     }
 
     createPost(content) {
+        // Registrar criação de post para usuários gratuitos
+        if (!this.premiumManager.isPremium) {
+            this.premiumManager.recordPost();
+        }
+
         const newPost = {
             id: Date.now().toString(),
             user: {
@@ -1510,6 +1558,164 @@ class FikahApp {
         
         this.posts.unshift(newPost);
         this.renderPosts(this.posts);
+    }
+
+    showCreateStoryModal() {
+        // Verificar se usuário gratuito pode criar story
+        if (!this.premiumManager.isPremium) {
+            const canCreate = this.premiumManager.canCreateStory();
+            if (!canCreate.allowed) {
+                this.premiumManager.showUpgradeModal(canCreate.reason, canCreate.message);
+                return;
+            }
+        }
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content create-story-modal">
+                <div class="modal-header">
+                    <h2>Criar Story</h2>
+                    <button class="close-modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="story-preview">
+                        <div class="story-preview-container">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=500&fit=crop&crop=face" alt="Preview" class="story-preview-image">
+                            <div class="story-text-overlay">
+                                <textarea placeholder="Adicione um texto ao seu story..." class="story-textarea" maxlength="100"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="story-options">
+                        <button class="option-btn">📷 Trocar Foto</button>
+                        <button class="option-btn">🎨 Filtros</button>
+                        <button class="option-btn">😊 Stickers</button>
+                    </div>
+                    <div class="char-count">
+                        <span class="current">0</span>/<span class="max">100</span>
+                    </div>
+                    <button class="publish-btn" disabled>Publicar Story</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const textarea = modal.querySelector('.story-textarea');
+        const charCount = modal.querySelector('.current');
+        const publishBtn = modal.querySelector('.publish-btn');
+        
+        textarea.addEventListener('input', (e) => {
+            const length = e.target.value.length;
+            charCount.textContent = length;
+            publishBtn.disabled = false; // Story pode ser publicado sem texto
+        });
+        
+        // Habilitar botão de publicar imediatamente (story pode ser só imagem)
+        publishBtn.disabled = false;
+        
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        publishBtn.addEventListener('click', () => {
+            const content = textarea.value.trim();
+            this.createStory(content);
+            this.showNotification('Story publicado com sucesso!', 'success');
+            modal.remove();
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    createStory(content) {
+        // Registrar criação de story para usuários gratuitos
+        if (!this.premiumManager.isPremium) {
+            this.premiumManager.recordStory();
+        }
+
+        const newStory = {
+            id: Date.now().toString(),
+            name: 'Você',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=500&fit=crop&crop=face',
+            text: content,
+            time: Date.now()
+        };
+        
+        this.stories.unshift(newStory);
+        this.renderStories();
+    }
+
+    renderStories() {
+        // Esta função pode ser implementada para atualizar a visualização dos stories
+        // Por enquanto, apenas mostramos uma notificação
+        console.log('Stories atualizados:', this.stories);
+    }
+
+    showWhoLikedModal() {
+        // Verificar se usuário pode ver quem curtiu
+        const canSee = this.premiumManager.canSeeWhoLiked();
+        if (!canSee.allowed) {
+            this.showPremiumFeatureModal(
+                'Ver quem curtiu você',
+                canSee.message,
+                'crown'
+            );
+            return;
+        }
+
+        // Se for premium, mostrar lista de quem curtiu
+        this.showNotification('Funcionalidade disponível para usuários premium', 'info');
+    }
+
+    showProfileVisitorsModal() {
+        // Verificar se usuário pode ver visitantes do perfil
+        const canSee = this.premiumManager.canSeeProfileVisitors();
+        if (!canSee.allowed) {
+            this.showPremiumFeatureModal(
+                'Ver visitantes do perfil',
+                canSee.message,
+                'eye'
+            );
+            return;
+        }
+
+        // Se for premium, mostrar lista de visitantes
+        this.showNotification('Funcionalidade disponível para usuários premium', 'info');
+    }
+
+    showPremiumFeatureModal(title, message, iconType = 'crown') {
+        const modal = document.getElementById('premium-modal');
+        const titleElement = document.getElementById('premium-modal-title');
+        const messageElement = document.getElementById('premium-modal-message');
+        const iconElement = modal.querySelector('.premium-modal-icon svg');
+
+        // Atualizar conteúdo do modal
+        titleElement.textContent = title;
+        messageElement.textContent = message;
+
+        // Atualizar ícone baseado no tipo
+        const icons = {
+            crown: '<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>',
+            eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>',
+            heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>'
+        };
+
+        iconElement.innerHTML = icons[iconType] || icons.crown;
+
+        // Mostrar modal
+        modal.classList.add('active');
+    }
+
+    hidePremiumModal() {
+        const modal = document.getElementById('premium-modal');
+        modal.classList.remove('active');
     }
 
     toggleDarkMode(enabled) {

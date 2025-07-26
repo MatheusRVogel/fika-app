@@ -304,14 +304,33 @@
                                 <span class="stat-number">127</span>
                                 <span class="stat-label">Matches</span>
                             </div>
-                            <div class="stat-item">
+                            <div class="stat-item clickable" id="who-liked-btn">
                                 <span class="stat-number">89</span>
                                 <span class="stat-label">Curtidas</span>
+                                <div class="stat-premium-icon">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                                    </svg>
+                                </div>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number">45</span>
                                 <span class="stat-label">Conversas</span>
                             </div>
+                        </div>
+                        <div class="profile-premium-features">
+                            <button class="premium-feature-btn" id="profile-visitors-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span>Ver visitantes do perfil</span>
+                                <div class="premium-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                                    </svg>
+                                </div>
+                            </button>
                         </div>
                         <div class="profile-actions">
                             <button class="profile-btn primary">Editar Perfil</button>
@@ -455,6 +474,23 @@
 
         <!-- Notifications -->
         <div id="notifications-container" class="notifications-container"></div>
+        
+        <!-- Premium Modal -->
+        <div id="premium-modal" class="premium-modal">
+            <div class="premium-modal-content">
+                <div class="premium-modal-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                    </svg>
+                </div>
+                <h3 id="premium-modal-title">Funcionalidade Premium</h3>
+                <p id="premium-modal-message">Esta funcionalidade está disponível apenas para usuários premium.</p>
+                <div class="premium-modal-actions">
+                    <button class="premium-upgrade-btn" id="premium-upgrade-btn">Fazer Upgrade</button>
+                    <button class="premium-cancel-btn" id="premium-cancel-btn">Cancelar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Supabase -->
@@ -498,6 +534,7 @@
                 const scripts = [
                     'https://js.stripe.com/v3/',
                     'stripe-config.js',
+                    'free-user-limits.js',
                     'premium-manager.js',
                     'fika-api.js',
                     'app.js'
