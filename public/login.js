@@ -197,13 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const locationInput = document.getElementById('register-location');
     const getLocationBtn = document.getElementById('get-location-btn');
 
-    // Verificar se o usuário já está logado
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        window.location.href = '/app';
-        return;
-    }
-
     // Verificar confirmação de email ao carregar a página
     checkEmailConfirmation();
 
@@ -226,21 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 const location = await getUserLocation();
-                
-                // Salvar coordenadas para uso posterior no filtro de proximidade
-                localStorage.setItem('userLatitude', location.latitude);
-                localStorage.setItem('userLongitude', location.longitude);
-                
-                // Se o usuário estiver logado, atualizar localização no Supabase
-                const userId = localStorage.getItem('userId');
-                if (userId && window.fikahSupabase) {
-                    try {
-                        await window.fikahSupabase.updateUserLocation(userId, location.latitude, location.longitude, `${location.city}, ${location.state}`);
-                        console.log('Localização atualizada no Supabase');
-                    } catch (error) {
-                        console.error('Erro ao atualizar localização no Supabase:', error);
-                    }
-                }
                 
                 locationInput.value = `${location.city}, ${location.state}`;
                 
@@ -293,20 +271,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await window.fikahSupabase.loginUser(email, password);
                 
                 if (result.user) {
-                    // Login bem-sucedido
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('userEmail', email);
-                    localStorage.setItem('userId', result.user.id);
-                    localStorage.setItem('showTrialModal', 'true');
-                    
-                    if (result.user.user_metadata?.name) {
-                        localStorage.setItem('userName', result.user.user_metadata.name);
-                    }
+                    console.log('✅ Login realizado com sucesso:', result.user.email);
                     
                     if (window.notifications) {
                         window.notifications.success('Login realizado com sucesso!');
                     }
                     
+                    // Redirecionar para o app
                     window.location.href = '/app';
                 }
             } catch (error) {
@@ -434,8 +405,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     password,
                     age,
                     location,
-                    latitude: parseFloat(localStorage.getItem('userLatitude')) || null,
-                    longitude: parseFloat(localStorage.getItem('userLongitude')) || null,
+                    latitude: null,
+                    longitude: null,
                     birthdate,
                     genderPreferences,
                     relationshipTypes,
@@ -478,12 +449,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Se não precisa confirmar email, fazer login automático
                 if (result.user) {
                     // Cadastro bem-sucedido
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('userEmail', email);
-                    localStorage.setItem('userName', name);
-                    localStorage.setItem('userId', result.user.id);
-                    localStorage.setItem('showTrialModal', 'true');
-                    
                     if (window.notifications) {
                         window.notifications.success('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
                     } else {

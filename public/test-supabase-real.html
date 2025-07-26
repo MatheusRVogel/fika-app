@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Supabase Real - Fikah</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Supabase Real - Fikah</h1>
+        
+        <div class="test-section">
+            <h3>1. Teste de Conexão</h3>
+            <button onclick="testConnection()">Testar Conexão</button>
+            <div id="connection-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Teste de Autenticação</h3>
+            <button onclick="testAuth()">Verificar Usuário Atual</button>
+            <button onclick="testSignOut()">Fazer Logout</button>
+            <div id="auth-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Teste de Registro</h3>
+            <input type="email" id="test-email" placeholder="Email de teste" value="teste@fikah.com">
+            <input type="password" id="test-password" placeholder="Senha" value="123456">
+            <input type="text" id="test-name" placeholder="Nome" value="Usuário Teste">
+            <br><br>
+            <button onclick="testSignUp()">Testar Registro</button>
+            <div id="signup-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Teste de Login</h3>
+            <button onclick="testSignIn()">Testar Login</button>
+            <div id="signin-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Teste de Banco de Dados</h3>
+            <button onclick="testDatabase()">Testar Acesso ao BD</button>
+            <div id="database-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Log de Testes</h3>
+            <button onclick="clearLog()">Limpar Log</button>
+            <div id="test-log" class="log"></div>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script>
+        let supabaseClient;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('test-log');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').innerHTML = '';
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        async function initSupabase() {
+            try {
+                log('Inicializando cliente Supabase...', 'info');
+                supabaseClient = new SupabaseClient();
+                log('Cliente Supabase inicializado com sucesso!', 'success');
+                return true;
+            } catch (error) {
+                log(`Erro ao inicializar Supabase: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testConnection() {
+            log('=== TESTE DE CONEXÃO ===', 'info');
+            
+            if (!supabaseClient) {
+                const initialized = await initSupabase();
+                if (!initialized) {
+                    showStatus('connection-status', 'Falha na inicialização do Supabase', 'error');
+                    return;
+                }
+            }
+
+            try {
+                // Teste simples de conexão
+                const { data, error } = await supabaseClient.supabase
+                    .from('profiles')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    log(`Erro na conexão: ${error.message}`, 'error');
+                    showStatus('connection-status', `Erro: ${error.message}`, 'error');
+                } else {
+                    log('Conexão com Supabase funcionando!', 'success');
+                    showStatus('connection-status', 'Conexão OK ✅', 'success');
+                }
+            } catch (error) {
+                log(`Erro inesperado: ${error.message}`, 'error');
+                showStatus('connection-status', `Erro inesperado: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAuth() {
+            log('=== TESTE DE AUTENTICAÇÃO ===', 'info');
+            
+            if (!supabaseClient) {
+                await initSupabase();
+            }
+
+            try {
+                const user = await supabaseClient.getCurrentUser();
+                
+                if (user) {
+                    log(`Usuário logado: ${user.email}`, 'success');
+                    showStatus('auth-status', `Usuário logado: ${user.email} ✅`, 'success');
+                } else {
+                    log('Nenhum usuário logado', 'info');
+                    showStatus('auth-status', 'Nenhum usuário logado', 'warning');
+                }
+            } catch (error) {
+                log(`Erro ao verificar autenticação: ${error.message}`, 'error');
+                showStatus('auth-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSignOut() {
+            log('=== TESTE DE LOGOUT ===', 'info');
+            
+            if (!supabaseClient) {
+                await initSupabase();
+            }
+
+            try {
+                await supabaseClient.signOut();
+                log('Logout realizado com sucesso!', 'success');
+                showStatus('auth-status', 'Logout realizado ✅', 'success');
+            } catch (error) {
+                log(`Erro no logout: ${error.message}`, 'error');
+                showStatus('auth-status', `Erro no logout: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSignUp() {
+            log('=== TESTE DE REGISTRO ===', 'info');
+            
+            if (!supabaseClient) {
+                await initSupabase();
+            }
+
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const name = document.getElementById('test-name').value;
+
+            if (!email || !password || !name) {
+                showStatus('signup-status', 'Preencha todos os campos', 'error');
+                return;
+            }
+
+            try {
+                log(`Tentando registrar usuário: ${email}`, 'info');
+                
+                const result = await supabaseClient.signUp(email, password, {
+                    name: name,
+                    age: 25,
+                    bio: 'Usuário de teste',
+                    latitude: -23.5505,
+                    longitude: -46.6333
+                });
+
+                if (result.user) {
+                    log(`Registro bem-sucedido! ID: ${result.user.id}`, 'success');
+                    showStatus('signup-status', 'Registro bem-sucedido! ✅', 'success');
+                } else {
+                    log('Registro falhou - nenhum usuário retornado', 'error');
+                    showStatus('signup-status', 'Registro falhou', 'error');
+                }
+            } catch (error) {
+                log(`Erro no registro: ${error.message}`, 'error');
+                showStatus('signup-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSignIn() {
+            log('=== TESTE DE LOGIN ===', 'info');
+            
+            if (!supabaseClient) {
+                await initSupabase();
+            }
+
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+
+            if (!email || !password) {
+                showStatus('signin-status', 'Preencha email e senha', 'error');
+                return;
+            }
+
+            try {
+                log(`Tentando fazer login: ${email}`, 'info');
+                
+                const result = await supabaseClient.signIn(email, password);
+
+                if (result.user) {
+                    log(`Login bem-sucedido! ID: ${result.user.id}`, 'success');
+                    showStatus('signin-status', 'Login bem-sucedido! ✅', 'success');
+                } else {
+                    log('Login falhou - credenciais inválidas', 'error');
+                    showStatus('signin-status', 'Login falhou', 'error');
+                }
+            } catch (error) {
+                log(`Erro no login: ${error.message}`, 'error');
+                showStatus('signin-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDatabase() {
+            log('=== TESTE DE BANCO DE DADOS ===', 'info');
+            
+            if (!supabaseClient) {
+                await initSupabase();
+            }
+
+            try {
+                // Testar acesso à tabela profiles
+                log('Testando acesso à tabela profiles...', 'info');
+                const { data: profiles, error: profilesError } = await supabaseClient.supabase
+                    .from('profiles')
+                    .select('*')
+                    .limit(5);
+
+                if (profilesError) {
+                    log(`Erro ao acessar profiles: ${profilesError.message}`, 'error');
+                } else {
+                    log(`Profiles encontrados: ${profiles.length}`, 'success');
+                }
+
+                // Testar acesso à tabela user_settings
+                log('Testando acesso à tabela user_settings...', 'info');
+                const { data: settings, error: settingsError } = await supabaseClient.supabase
+                    .from('user_settings')
+                    .select('*')
+                    .limit(5);
+
+                if (settingsError) {
+                    log(`Erro ao acessar user_settings: ${settingsError.message}`, 'error');
+                } else {
+                    log(`Configurações encontradas: ${settings.length}`, 'success');
+                }
+
+                if (!profilesError && !settingsError) {
+                    showStatus('database-status', 'Acesso ao banco funcionando! ✅', 'success');
+                } else {
+                    showStatus('database-status', 'Problemas no acesso ao banco', 'error');
+                }
+
+            } catch (error) {
+                log(`Erro inesperado no banco: ${error.message}`, 'error');
+                showStatus('database-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Inicializar quando a página carregar
+        window.addEventListener('load', async () => {
+            log('Página carregada, iniciando testes...', 'info');
+            await testConnection();
+            await testAuth();
+        });
+    </script>
+</body>
+</html>

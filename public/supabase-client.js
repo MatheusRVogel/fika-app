@@ -1,40 +1,54 @@
 // Configuração do Supabase para o frontend
 class SupabaseClient {
     constructor() {
-        this.useLocalStorage = false;
-        
-        // Tentar inicializar Supabase real
+        this.client = null;
+        this.initializeClient();
+    }
+
+    async initializeClient() {
         try {
-            if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-                this.client = window.supabase.createClient(
-                    'https://kujhzettkaitekulvhqt.supabase.co',
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8'
-                );
-                console.log('✅ Supabase Client inicializado com banco real');
-            } else {
-                throw new Error('Supabase não disponível');
-            }
+            // Aguardar o carregamento do Supabase CDN
+            await this.waitForSupabase();
+            
+            // Configurações do Supabase
+            const supabaseUrl = 'https://kujhzettkaitekulvhqt.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8';
+
+            // Inicializar cliente Supabase
+            this.client = window.supabase.createClient(supabaseUrl, supabaseKey);
+            
+            console.log('✅ Cliente Supabase inicializado com sucesso');
+            return this.client;
         } catch (error) {
-            console.warn('⚠️ Supabase não disponível, usando localStorage como fallback');
-            this.useLocalStorage = true;
+            console.error('❌ Erro ao inicializar Supabase:', error);
+            throw new Error('Falha ao conectar com o Supabase. Verifique sua conexão.');
         }
+    }
+
+    // Aguardar o carregamento do Supabase CDN
+    async waitForSupabase() {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50; // 5 segundos máximo
+            
+            const checkSupabase = () => {
+                if (typeof window.supabase !== 'undefined') {
+                    console.log('✅ Supabase CDN carregado');
+                    resolve();
+                } else if (attempts >= maxAttempts) {
+                    reject(new Error('Timeout: Supabase CDN não carregou'));
+                } else {
+                    attempts++;
+                    setTimeout(checkSupabase, 100);
+                }
+            };
+            
+            checkSupabase();
+        });
     }
 
     // Método para registrar usuário
     async signUp(email, password, userData = {}) {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            const userId = 'user_' + Date.now();
-            const user = {
-                id: userId,
-                email: email,
-                user_metadata: userData
-            };
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            localStorage.setItem('isLoggedIn', 'true');
-            return { data: { user }, error: null };
-        }
-        
         try {
             const { data, error } = await this.client.auth.signUp({
                 email: email,
@@ -52,17 +66,6 @@ class SupabaseClient {
 
     // Método para fazer login
     async signIn(email, password) {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            const user = {
-                id: 'user_' + Date.now(),
-                email: email
-            };
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            localStorage.setItem('isLoggedIn', 'true');
-            return { data: { user }, error: null };
-        }
-        
         try {
             const { data, error } = await this.client.auth.signInWithPassword({
                 email: email,
@@ -77,16 +80,6 @@ class SupabaseClient {
 
     // Método para fazer logout
     async signOut() {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userId');
-            return { error: null };
-        }
-        
         try {
             const { error } = await this.client.auth.signOut();
             return { error };
@@ -98,16 +91,6 @@ class SupabaseClient {
 
     // Método para obter usuário atual
     async getCurrentUser() {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            const userStr = localStorage.getItem('currentUser');
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (userStr && isLoggedIn) {
-                return { user: JSON.parse(userStr), error: null };
-            }
-            return { user: null, error: null };
-        }
-        
         try {
             const { data: { user }, error } = await this.client.auth.getUser();
             return { user, error };
@@ -119,53 +102,6 @@ class SupabaseClient {
 
     // Registrar novo usuário
     async registerUser(userData) {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            try {
-                // Verificar se email já existe
-                const existingUsers = JSON.parse(localStorage.getItem('fikah_users') || '[]');
-                const emailExists = existingUsers.find(u => u.email === userData.email);
-                
-                if (emailExists) {
-                    throw new Error('Email já cadastrado');
-                }
-                
-                // Criar novo usuário
-                const userId = 'user_' + Date.now();
-                const newUser = {
-                    id: userId,
-                    email: userData.email,
-                    password: userData.password, // Em produção, isso seria hasheado
-                    email_confirmed_at: new Date().toISOString(), // Simular email confirmado para localStorage
-                    user_metadata: {
-                        name: userData.name,
-                        age: userData.age,
-                        location: userData.location,
-                        birthdate: userData.birthdate,
-                        interests: userData.interests || [],
-                        relationshipTypes: userData.relationshipTypes || [],
-                        lookingFor: userData.lookingFor || [],
-                        genderPreferences: userData.genderPreferences || [],
-                        ageConfirmed: userData.ageConfirmed || false
-                    },
-                    created_at: new Date().toISOString()
-                };
-                
-                // Salvar usuário
-                existingUsers.push(newUser);
-                localStorage.setItem('fikah_users', JSON.stringify(existingUsers));
-                
-                return { 
-                    user: newUser, 
-                    profile: newUser.user_metadata,
-                    needsEmailConfirmation: false // Para localStorage, não precisa confirmar
-                };
-            } catch (error) {
-                console.error('Erro no registro localStorage:', error);
-                throw error;
-            }
-        }
-        
         try {
             // Registrar usuário no Supabase Auth com confirmação de email
             const { data: authData, error: authError } = await this.client.auth.signUp({
@@ -196,6 +132,7 @@ class SupabaseClient {
                     .from('profiles')
                     .insert([{
                         id: authData.user.id,
+                        email: userData.email,
                         name: userData.name,
                         age: userData.age,
                         location: userData.location,
@@ -249,26 +186,6 @@ class SupabaseClient {
 
     // Login do usuário
     async loginUser(email, password) {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            try {
-                const existingUsers = JSON.parse(localStorage.getItem('fikah_users') || '[]');
-                const user = existingUsers.find(u => u.email === email && u.password === password);
-                
-                if (!user) {
-                    throw new Error('Invalid login credentials');
-                }
-                
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                localStorage.setItem('isLoggedIn', 'true');
-                
-                return { user: user };
-            } catch (error) {
-                console.error('Erro no login localStorage:', error);
-                throw error;
-            }
-        }
-        
         try {
             const { data, error } = await this.client.auth.signInWithPassword({
                 email,
@@ -290,6 +207,7 @@ class SupabaseClient {
                 .from('profiles')
                 .insert([{
                     id: userData.userId,
+                    email: userData.email,
                     name: userData.name,
                     age: userData.age,
                     location: userData.location,
@@ -366,35 +284,6 @@ class SupabaseClient {
 
     // Atualizar localização do usuário
     async updateUserLocation(userId, latitude, longitude, location) {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage
-            try {
-                const existingUsers = JSON.parse(localStorage.getItem('fikah_users') || '[]');
-                const userIndex = existingUsers.findIndex(u => u.id === userId);
-                
-                if (userIndex !== -1) {
-                    existingUsers[userIndex].user_metadata.latitude = latitude;
-                    existingUsers[userIndex].user_metadata.longitude = longitude;
-                    existingUsers[userIndex].user_metadata.location = location;
-                    localStorage.setItem('fikah_users', JSON.stringify(existingUsers));
-                    
-                    // Atualizar usuário atual se for o mesmo
-                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                    if (currentUser.id === userId) {
-                        currentUser.user_metadata.latitude = latitude;
-                        currentUser.user_metadata.longitude = longitude;
-                        currentUser.user_metadata.location = location;
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    }
-                }
-                
-                return { success: true };
-            } catch (error) {
-                console.error('Erro ao atualizar localização localStorage:', error);
-                throw error;
-            }
-        }
-        
         try {
             const { data, error } = await this.client
                 .from('profiles')
@@ -416,11 +305,6 @@ class SupabaseClient {
 
     // Buscar usuários próximos
     async getNearbyUsers(userId, latitude, longitude, maxDistance = 50) {
-        if (this.useLocalStorage) {
-            // Fallback usando localStorage - usar dados mock do app.js
-            return [];
-        }
-        
         try {
             const { data, error } = await this.client
                 .rpc('get_nearby_users', {

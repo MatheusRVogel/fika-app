@@ -58,9 +58,27 @@ class FikahApp {
 
     async loadCurrentUser() {
         try {
+            console.log('🔍 Verificando autenticação do usuário...');
+            
+            // Verificar se o Supabase está disponível
+            if (!window.fikahSupabase) {
+                console.error('❌ Supabase não inicializado');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Tentar obter usuário do Supabase
             const userResponse = await window.fikahSupabase.getCurrentUser();
             
+            if (userResponse.error) {
+                console.error('❌ Erro do Supabase:', userResponse.error);
+                console.log('❌ Erro na autenticação, redirecionando para login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
             if (!userResponse || !userResponse.user) {
+                console.log('❌ Usuário não autenticado, redirecionando para login');
                 window.location.href = 'login.html';
                 return;
             }
@@ -72,13 +90,14 @@ class FikahApp {
                 id: userResponse.user.id
             };
             
-            console.log('✅ Usuário carregado:', this.currentUser.email);
+            console.log('✅ Usuário carregado do Supabase:', this.currentUser.email);
             
             // Atualizar interface com dados do usuário
             this.updateUserInterface();
             
         } catch (error) {
             console.error('❌ Erro ao carregar usuário:', error);
+            console.log('❌ Falha na autenticação, redirecionando para login');
             window.location.href = 'login.html';
         }
     }

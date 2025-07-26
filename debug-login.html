@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login - Fikah</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Login - Fikah</h1>
+    
+    <div class="debug-section">
+        <h2>Status da Autenticação</h2>
+        <div id="auth-status"></div>
+        <button onclick="checkAuthStatus()">Verificar Status</button>
+        <button onclick="clearStorage()">Limpar Storage</button>
+        <button onclick="testSupabase()">Testar Supabase</button>
+    </div>
+
+    <div class="debug-section">
+        <h2>Dados do LocalStorage</h2>
+        <div id="storage-data"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Dados do Supabase</h2>
+        <div id="supabase-data"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Logs de Debug</h2>
+        <div id="debug-logs"></div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    
+    <script>
+        let debugLogs = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLogs.push({ timestamp, message, type });
+            updateDebugLogs();
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function updateDebugLogs() {
+            const container = document.getElementById('debug-logs');
+            container.innerHTML = debugLogs.map(log => 
+                `<div class="status ${log.type}">[${log.timestamp}] ${log.message}</div>`
+            ).join('');
+        }
+        
+        async function checkAuthStatus() {
+            log('Iniciando verificação de autenticação...', 'info');
+            
+            try {
+                // Verificar se o Supabase está disponível
+                const supabaseAvailable = typeof window.supabase !== 'undefined';
+                log(`Supabase disponível: ${supabaseAvailable}`, supabaseAvailable ? 'success' : 'warning');
+                
+                // Inicializar cliente
+                const client = new SupabaseClient();
+                log(`Cliente inicializado. Usando localStorage: ${client.useLocalStorage}`, 'info');
+                
+                // Verificar usuário atual
+                const { user, error } = await client.getCurrentUser();
+                
+                if (error) {
+                    log(`Erro ao obter usuário: ${error.message}`, 'error');
+                } else if (user) {
+                    log(`Usuário encontrado: ${user.email}`, 'success');
+                    log(`ID do usuário: ${user.id}`, 'info');
+                    log(`Email confirmado: ${user.email_confirmed_at ? 'Sim' : 'Não'}`, user.email_confirmed_at ? 'success' : 'warning');
+                } else {
+                    log('Nenhum usuário autenticado', 'warning');
+                }
+                
+                // Verificar perfil se usando Supabase real
+                if (!client.useLocalStorage && user) {
+                    try {
+                        const { data: profile, error: profileError } = await client.client
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', user.id)
+                            .single();
+                            
+                        if (profileError) {
+                            log(`Erro ao buscar perfil: ${profileError.message}`, 'error');
+                        } else if (profile) {
+                            log(`Perfil encontrado: ${profile.name}`, 'success');
+                        } else {
+                            log('Perfil não encontrado na tabela profiles', 'error');
+                        }
+                    } catch (err) {
+                        log(`Erro na consulta do perfil: ${err.message}`, 'error');
+                    }
+                }
+                
+                updateAuthStatus(user, error);
+                updateStorageData();
+                updateSupabaseData(client);
+                
+            } catch (err) {
+                log(`Erro geral: ${err.message}`, 'error');
+            }
+        }
+        
+        function updateAuthStatus(user, error) {
+            const container = document.getElementById('auth-status');
+            if (error) {
+                container.innerHTML = `<div class="status error">Erro: ${error.message}</div>`;
+            } else if (user) {
+                container.innerHTML = `
+                    <div class="status success">✅ Usuário autenticado</div>
+                    <pre>${JSON.stringify(user, null, 2)}</pre>
+                `;
+            } else {
+                container.innerHTML = `<div class="status warning">⚠️ Usuário não autenticado</div>`;
+            }
+        }
+        
+        function updateStorageData() {
+            const container = document.getElementById('storage-data');
+            const storageData = {
+                currentUser: localStorage.getItem('currentUser'),
+                isLoggedIn: localStorage.getItem('isLoggedIn'),
+                userEmail: localStorage.getItem('userEmail'),
+                userName: localStorage.getItem('userName'),
+                userId: localStorage.getItem('userId'),
+                fikah_users: localStorage.getItem('fikah_users')
+            };
+            
+            container.innerHTML = `<pre>${JSON.stringify(storageData, null, 2)}</pre>`;
+        }
+        
+        async function updateSupabaseData(client) {
+            const container = document.getElementById('supabase-data');
+            
+            if (client.useLocalStorage) {
+                container.innerHTML = `<div class="status warning">Usando localStorage como fallback</div>`;
+                return;
+            }
+            
+            try {
+                const { data: session } = await client.client.auth.getSession();
+                container.innerHTML = `
+                    <div class="status info">Sessão do Supabase:</div>
+                    <pre>${JSON.stringify(session, null, 2)}</pre>
+                `;
+            } catch (err) {
+                container.innerHTML = `<div class="status error">Erro ao obter sessão: ${err.message}</div>`;
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            log('LocalStorage limpo', 'info');
+            updateStorageData();
+        }
+        
+        async function testSupabase() {
+            log('Testando conexão com Supabase...', 'info');
+            
+            try {
+                const client = window.supabase.createClient(
+                    'https://kujhzettkaitekulvhqt.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8'
+                );
+                
+                const { data, error } = await client.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    log(`Erro na conexão: ${error.message}`, 'error');
+                } else {
+                    log('Conexão com Supabase OK', 'success');
+                }
+            } catch (err) {
+                log(`Erro no teste: ${err.message}`, 'error');
+            }
+        }
+        
+        // Executar verificação inicial
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Página carregada, iniciando debug...', 'info');
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>

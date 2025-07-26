@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Correção do Login - Fikah</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste de Correção do Login</h1>
+        <p>Esta página testa se as correções aplicadas resolveram o problema de loop de login.</p>
+        
+        <div id="status-container">
+            <div class="info">
+                ℹ️ Clique em "Executar Teste" para verificar o status atual do sistema.
+            </div>
+        </div>
+        
+        <button onclick="runTest()">🧪 Executar Teste</button>
+        <button onclick="clearStorage()">🗑️ Limpar Storage</button>
+        <button onclick="simulateLogin()">🔐 Simular Login</button>
+        <button onclick="testAppLoad()">📱 Testar Carregamento do App</button>
+        
+        <div class="container">
+            <h3>📋 Log de Teste</h3>
+            <div id="test-log" class="log">Aguardando execução do teste...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    
+    <script>
+        let testLog = '';
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            testLog += `[${timestamp}] ${message}\n`;
+            document.getElementById('test-log').textContent = testLog;
+            console.log(message);
+        }
+        
+        function showStatus(message, type = 'info') {
+            const container = document.getElementById('status-container');
+            container.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+        
+        async function runTest() {
+            testLog = '';
+            log('🔍 Iniciando teste de correção do login...');
+            
+            try {
+                // 1. Verificar se o Supabase está disponível
+                log('1️⃣ Verificando disponibilidade do Supabase...');
+                if (window.fikahSupabase) {
+                    log('✅ Supabase Client inicializado');
+                } else {
+                    log('⚠️ Supabase Client não encontrado');
+                }
+                
+                // 2. Verificar localStorage
+                log('2️⃣ Verificando localStorage...');
+                const currentUser = localStorage.getItem('currentUser');
+                const isLoggedIn = localStorage.getItem('isLoggedIn');
+                
+                if (currentUser) {
+                    const userData = JSON.parse(currentUser);
+                    log(`✅ Usuário encontrado no localStorage: ${userData.email}`);
+                    log(`📋 Dados do usuário: ${JSON.stringify(userData, null, 2)}`);
+                } else {
+                    log('❌ Nenhum usuário encontrado no localStorage');
+                }
+                
+                log(`🔐 Status de login: ${isLoggedIn}`);
+                
+                // 3. Testar função loadCurrentUser do app.js
+                log('3️⃣ Testando lógica de carregamento do usuário...');
+                
+                if (currentUser && isLoggedIn === 'true') {
+                    const userData = JSON.parse(currentUser);
+                    if (userData.email && userData.id) {
+                        log('✅ Dados do usuário válidos para carregamento');
+                        showStatus('✅ Sistema parece estar funcionando corretamente!', 'success');
+                    } else {
+                        log('❌ Dados do usuário incompletos');
+                        showStatus('⚠️ Dados do usuário incompletos no localStorage', 'warning');
+                    }
+                } else {
+                    log('❌ Usuário não está logado');
+                    showStatus('ℹ️ Usuário não está logado', 'info');
+                }
+                
+                // 4. Verificar se há erros conhecidos
+                log('4️⃣ Verificando possíveis problemas...');
+                
+                const problems = [];
+                
+                if (!window.fikahSupabase) {
+                    problems.push('Supabase não inicializado');
+                }
+                
+                if (currentUser) {
+                    try {
+                        const userData = JSON.parse(currentUser);
+                        if (!userData.id || !userData.email) {
+                            problems.push('Dados do usuário incompletos');
+                        }
+                    } catch (e) {
+                        problems.push('Dados do usuário corrompidos');
+                    }
+                }
+                
+                if (problems.length > 0) {
+                    log(`⚠️ Problemas encontrados: ${problems.join(', ')}`);
+                    showStatus(`⚠️ Problemas encontrados: ${problems.join(', ')}`, 'warning');
+                } else {
+                    log('✅ Nenhum problema detectado');
+                }
+                
+                log('🏁 Teste concluído!');
+                
+            } catch (error) {
+                log(`❌ Erro durante o teste: ${error.message}`);
+                showStatus(`❌ Erro durante o teste: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            log('🗑️ Storage limpo');
+            showStatus('🗑️ Storage limpo com sucesso', 'info');
+        }
+        
+        async function simulateLogin() {
+            log('🔐 Simulando login com dados de teste...');
+            
+            const testUser = {
+                id: 'test_user_' + Date.now(),
+                email: 'matheusrvogel@gmail.com',
+                name: 'Matheus Vogel',
+                user_metadata: {
+                    name: 'Matheus Vogel'
+                }
+            };
+            
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('currentUser', JSON.stringify(testUser));
+            localStorage.setItem('userEmail', testUser.email);
+            localStorage.setItem('userId', testUser.id);
+            
+            log(`✅ Login simulado para: ${testUser.email}`);
+            showStatus('✅ Login simulado com sucesso', 'success');
+        }
+        
+        function testAppLoad() {
+            log('📱 Testando carregamento do app...');
+            showStatus('📱 Redirecionando para o app...', 'info');
+            
+            setTimeout(() => {
+                window.location.href = '/app';
+            }, 1000);
+        }
+        
+        // Executar teste inicial
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runTest, 500);
+        });
+    </script>
+</body>
+</html>

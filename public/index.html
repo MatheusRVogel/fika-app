@@ -604,14 +604,14 @@
                 console.log(`✅ ${scriptsLoaded}/${totalScripts} scripts carregados`);
                 
                 // Timeout de segurança apenas para garantir que o app.js execute
-                // Se o app.js não remover a tela de loading em 10 segundos, algo deu errado
+                // Se o app.js não remover a tela de loading em 15 segundos, algo deu errado
                 setTimeout(() => {
                     const loadingScreen = document.getElementById('loading-screen');
                     if (loadingScreen && loadingScreen.style.display !== 'none') {
                         console.error('❌ App.js não removeu a tela de loading, redirecionando para login');
                         window.location.href = 'login.html';
                     }
-                }, 10000);
+                }, 15000);
                 
             } catch (error) {
                 console.error('❌ Erro ao verificar autenticação:', error);
