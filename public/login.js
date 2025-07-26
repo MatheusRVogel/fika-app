@@ -268,7 +268,12 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
 
             try {
-                const result = await window.fikahSupabase.loginUser(email, password);
+                // Aguardar o Supabase estar pronto
+                console.log('⏳ Aguardando Supabase estar pronto...');
+                const supabaseClient = await window.waitForSupabaseReady(10000);
+                console.log('✅ Supabase pronto, fazendo login...');
+                
+                const result = await supabaseClient.loginUser(email, password);
                 
                 if (result.user) {
                     console.log('✅ Login realizado com sucesso:', result.user.email);
@@ -282,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     // Verificar se a sessão foi estabelecida
-                    const session = await window.fikahSupabase.waitForSession(5);
+                    const session = await supabaseClient.waitForSession(5);
                     if (session) {
                         console.log('✅ Sessão confirmada, redirecionando para o app');
                         // Redirecionar para o app

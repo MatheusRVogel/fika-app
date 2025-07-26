@@ -15,7 +15,16 @@ class SupabaseClient {
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8';
 
             // Inicializar cliente Supabase
-            this.client = window.supabase.createClient(supabaseUrl, supabaseKey);
+            this.client = window.supabase.createClient(supabaseUrl, supabaseKey, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+            
+            // Adicionar referência global para compatibilidade
+            this.supabase = this.client;
             
             console.log('✅ Cliente Supabase inicializado com sucesso');
             return this.client;
@@ -366,14 +375,49 @@ class SupabaseClient {
 }
 
 // Aguardar o carregamento do DOM e do Supabase antes de inicializar
-function initializeSupabase() {
-    if (typeof window.supabase !== 'undefined') {
-        window.fikahSupabase = new SupabaseClient();
-    } else {
-        console.log('Aguardando carregamento do Supabase...');
-        setTimeout(initializeSupabase, 100);
+async function initializeSupabase() {
+    try {
+        if (typeof window.supabase !== 'undefined') {
+            console.log('🔄 Inicializando cliente Supabase...');
+            window.fikahSupabase = new SupabaseClient();
+            
+            // Aguardar a inicialização completa
+            await window.fikahSupabase.initializeClient();
+            
+            // Marcar como inicializado
+            window.fikahSupabaseReady = true;
+            console.log('✅ Cliente Supabase pronto para uso');
+            
+            // Disparar evento personalizado
+            window.dispatchEvent(new CustomEvent('supabaseReady'));
+        } else {
+            console.log('⏳ Aguardando carregamento do Supabase CDN...');
+            setTimeout(initializeSupabase, 100);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao inicializar Supabase:', error);
+        setTimeout(initializeSupabase, 1000); // Tentar novamente em 1 segundo
     }
 }
+
+// Função para aguardar o Supabase estar pronto
+window.waitForSupabaseReady = function(timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        if (window.fikahSupabaseReady && window.fikahSupabase) {
+            resolve(window.fikahSupabase);
+            return;
+        }
+        
+        const timeoutId = setTimeout(() => {
+            reject(new Error('Timeout: Supabase não inicializou a tempo'));
+        }, timeout);
+        
+        window.addEventListener('supabaseReady', () => {
+            clearTimeout(timeoutId);
+            resolve(window.fikahSupabase);
+        }, { once: true });
+    });
+};
 
 // Inicializar quando o DOM estiver pronto
 if (document.readyState === 'loading') {

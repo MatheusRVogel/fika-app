@@ -533,24 +533,21 @@
             console.log('🔐 Verificando autenticação...');
             
             try {
-                // Aguardar inicialização do Supabase
-                let attempts = 0;
-                const maxAttempts = 50; // 5 segundos máximo
+                // Aguardar inicialização completa do Supabase
+                console.log('⏳ Aguardando Supabase estar pronto...');
+                const supabaseClient = await window.waitForSupabaseReady();
                 
-                while (!window.fikahSupabase && attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    attempts++;
-                }
-                
-                if (!window.fikahSupabase) {
+                if (!supabaseClient) {
                     console.error('❌ Supabase não foi inicializado, redirecionando para login');
                     window.location.href = 'login.html';
                     return;
                 }
                 
+                console.log('✅ Supabase inicializado com sucesso');
+                
                 // Aguardar sessão ser estabelecida (importante após login)
                 console.log('⏳ Aguardando sessão ser estabelecida...');
-                const session = await window.fikahSupabase.waitForSession(15); // 7.5 segundos máximo
+                const session = await supabaseClient.waitForSession(15); // 15 segundos máximo
                 
                 if (!session) {
                     console.log('❌ Nenhuma sessão encontrada, redirecionando para login');
@@ -559,7 +556,7 @@
                 }
                 
                 console.log('✅ Sessão encontrada, verificando usuário...');
-                const currentUser = await window.fikahSupabase.getCurrentUser();
+                const currentUser = await supabaseClient.getCurrentUser();
                 
                 if (!currentUser || !currentUser.user) {
                     console.log('❌ Usuário não autenticado, redirecionando para login');

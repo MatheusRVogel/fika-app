@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Avançado - Fluxo de Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background: #f8fff8; }
+        .error { border-color: #f44336; background: #fff8f8; }
+        .warning { border-color: #ff9800; background: #fffaf0; }
+        .info { border-color: #2196F3; background: #f0f8ff; }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #ff5252; }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .step {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #ddd;
+            background: #f9f9f9;
+        }
+        .step.active { border-color: #2196F3; background: #e3f2fd; }
+        .step.success { border-color: #4CAF50; background: #e8f5e8; }
+        .step.error { border-color: #f44336; background: #ffebee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Avançado - Fluxo de Login</h1>
+        <p>Este script monitora cada etapa do processo de login para identificar onde está falhando.</p>
+
+        <div class="debug-section info">
+            <h3>📋 Status do Sistema</h3>
+            <div id="system-status">Verificando...</div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🔐 Teste de Login Detalhado</h3>
+            <input type="email" id="debug-email" placeholder="Email de teste" value="">
+            <input type="password" id="debug-password" placeholder="Senha de teste" value="">
+            <button onclick="debugLogin()">🔍 Debug Login Completo</button>
+            <button onclick="clearLogs()">🧹 Limpar Logs</button>
+            
+            <h4>📊 Etapas do Processo:</h4>
+            <div id="steps-container">
+                <div class="step" id="step-1">1. Inicialização do Supabase</div>
+                <div class="step" id="step-2">2. Tentativa de Login</div>
+                <div class="step" id="step-3">3. Verificação de Resposta</div>
+                <div class="step" id="step-4">4. Aguardo de Sessão (1s)</div>
+                <div class="step" id="step-5">5. Verificação de Sessão</div>
+                <div class="step" id="step-6">6. Redirecionamento</div>
+                <div class="step" id="step-7">7. Verificação no App</div>
+            </div>
+            
+            <div id="debug-log" class="log"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🧪 Testes Individuais</h3>
+            <button onclick="testSupabaseInit()">Testar Inicialização</button>
+            <button onclick="testGetSession()">Testar getSession()</button>
+            <button onclick="testGetUser()">Testar getUser()</button>
+            <button onclick="testWaitForSession()">Testar waitForSession()</button>
+            <button onclick="simulateAppCheck()">Simular Verificação do App</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>🌐 Teste de Redirecionamento</h3>
+            <button onclick="testRedirect()">Testar Redirecionamento Manual</button>
+            <button onclick="window.location.href='/app'">Ir para /app</button>
+            <button onclick="window.location.href='login.html'">Ir para Login</button>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+
+    <script>
+        let logElement = document.getElementById('debug-log');
+        let statusElement = document.getElementById('system-status');
+        let currentStep = 0;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log(logEntry);
+            
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'black';
+            logElement.innerHTML += `<span style="color: ${color}">${logEntry}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function setStep(stepNumber, status = 'active') {
+            // Reset all steps
+            for (let i = 1; i <= 7; i++) {
+                const step = document.getElementById(`step-${i}`);
+                step.className = 'step';
+            }
+            
+            // Set current step
+            if (stepNumber > 0) {
+                const step = document.getElementById(`step-${stepNumber}`);
+                step.className = `step ${status}`;
+                
+                // Mark previous steps as success
+                for (let i = 1; i < stepNumber; i++) {
+                    const prevStep = document.getElementById(`step-${i}`);
+                    if (!prevStep.className.includes('error')) {
+                        prevStep.className = 'step success';
+                    }
+                }
+            }
+        }
+
+        function clearLogs() {
+            logElement.innerHTML = '';
+            setStep(0);
+        }
+
+        async function checkSystemStatus() {
+            try {
+                log('🔍 Verificando status do sistema...');
+                
+                // Verificar se Supabase está carregado
+                if (typeof window.supabase === 'undefined') {
+                    statusElement.innerHTML = '<span style="color: red;">❌ Supabase CDN não carregado</span>';
+                    return;
+                }
+
+                // Verificar se cliente está inicializado
+                if (!window.fikahSupabase) {
+                    statusElement.innerHTML = '<span style="color: orange;">⏳ Aguardando inicialização do cliente...</span>';
+                    setTimeout(checkSystemStatus, 1000);
+                    return;
+                }
+
+                // Verificar sessão atual
+                const session = await window.fikahSupabase.supabase.auth.getSession();
+                const user = await window.fikahSupabase.supabase.auth.getUser();
+
+                let status = '<div>';
+                status += '<div>✅ Supabase CDN: Carregado</div>';
+                status += '<div>✅ Cliente Supabase: Inicializado</div>';
+                status += `<div>${session.data.session ? '✅' : '❌'} Sessão: ${session.data.session ? 'Ativa' : 'Não encontrada'}</div>`;
+                status += `<div>${user.data.user ? '✅' : '❌'} Usuário: ${user.data.user ? user.data.user.email : 'Não autenticado'}</div>`;
+                
+                if (session.data.session) {
+                    status += `<div>🕒 Sessão expira em: ${new Date(session.data.session.expires_at * 1000).toLocaleString()}</div>`;
+                }
+                
+                status += '</div>';
+                statusElement.innerHTML = status;
+                
+                log(`Sistema: ${session.data.session ? 'Usuário logado' : 'Usuário não logado'}`);
+            } catch (error) {
+                statusElement.innerHTML = `<span style="color: red;">❌ Erro: ${error.message}</span>`;
+                log(`❌ Erro no sistema: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugLogin() {
+            const email = document.getElementById('debug-email').value;
+            const password = document.getElementById('debug-password').value;
+
+            if (!email || !password) {
+                log('❌ Por favor, preencha email e senha', 'error');
+                return;
+            }
+
+            clearLogs();
+            log('🚀 INICIANDO DEBUG DE LOGIN COMPLETO');
+            log(`📧 Email: ${email}`);
+            log('🔒 Senha: [OCULTA]');
+            log('');
+
+            try {
+                // Etapa 1: Inicialização
+                setStep(1, 'active');
+                log('📋 ETAPA 1: Verificando inicialização do Supabase...');
+                
+                if (!window.fikahSupabase) {
+                    setStep(1, 'error');
+                    log('❌ Cliente Supabase não inicializado!', 'error');
+                    return;
+                }
+                
+                log('✅ Cliente Supabase inicializado');
+                setStep(1, 'success');
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Etapa 2: Login
+                setStep(2, 'active');
+                log('📋 ETAPA 2: Tentando fazer login...');
+                
+                const loginResult = await window.fikahSupabase.loginUser(email, password);
+                log(`📊 Resultado do login: ${JSON.stringify(loginResult, null, 2)}`);
+                
+                if (!loginResult.user) {
+                    setStep(2, 'error');
+                    log('❌ Login falhou - usuário não retornado', 'error');
+                    return;
+                }
+                
+                log(`✅ Login bem-sucedido: ${loginResult.user.email}`, 'success');
+                setStep(2, 'success');
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Etapa 3: Verificação de resposta
+                setStep(3, 'active');
+                log('📋 ETAPA 3: Verificando resposta do login...');
+                
+                const immediateSession = await window.fikahSupabase.supabase.auth.getSession();
+                log(`📊 Sessão imediata: ${JSON.stringify(immediateSession.data, null, 2)}`);
+                
+                const immediateUser = await window.fikahSupabase.supabase.auth.getUser();
+                log(`📊 Usuário imediato: ${JSON.stringify(immediateUser.data, null, 2)}`);
+                
+                setStep(3, 'success');
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Etapa 4: Aguardo
+                setStep(4, 'active');
+                log('📋 ETAPA 4: Aguardando 1 segundo para sessão ser estabelecida...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                log('✅ Aguardo concluído');
+                setStep(4, 'success');
+
+                // Etapa 5: Verificação de sessão
+                setStep(5, 'active');
+                log('📋 ETAPA 5: Verificando sessão após aguardo...');
+                
+                const sessionAfterWait = await window.fikahSupabase.supabase.auth.getSession();
+                log(`📊 Sessão após aguardo: ${JSON.stringify(sessionAfterWait.data, null, 2)}`);
+                
+                const waitForSessionResult = await window.fikahSupabase.waitForSession(5);
+                log(`📊 waitForSession resultado: ${JSON.stringify(waitForSessionResult, null, 2)}`);
+                
+                if (!waitForSessionResult) {
+                    setStep(5, 'error');
+                    log('❌ Sessão não estabelecida após aguardo', 'error');
+                } else {
+                    log('✅ Sessão estabelecida com sucesso', 'success');
+                    setStep(5, 'success');
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Etapa 6: Redirecionamento
+                setStep(6, 'active');
+                log('📋 ETAPA 6: Simulando redirecionamento...');
+                log('🔄 Em um cenário real, redirecionaria para /app agora');
+                log('✅ Redirecionamento seria executado');
+                setStep(6, 'success');
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Etapa 7: Verificação no app
+                setStep(7, 'active');
+                log('📋 ETAPA 7: Simulando verificação no app...');
+                await simulateAppCheck();
+                setStep(7, 'success');
+
+                log('');
+                log('🎉 DEBUG COMPLETO! Verifique os logs acima para identificar problemas.');
+
+            } catch (error) {
+                log(`❌ ERRO DURANTE DEBUG: ${error.message}`, 'error');
+                log(`📊 Stack trace: ${error.stack}`, 'error');
+                setStep(currentStep, 'error');
+            }
+
+            // Atualizar status
+            setTimeout(checkSystemStatus, 1000);
+        }
+
+        async function testSupabaseInit() {
+            log('🧪 Testando inicialização do Supabase...');
+            log(`Supabase global: ${typeof window.supabase}`);
+            log(`Cliente fikah: ${typeof window.fikahSupabase}`);
+            if (window.fikahSupabase) {
+                log(`URL: ${window.fikahSupabase.supabase.supabaseUrl}`);
+                log(`Key: ${window.fikahSupabase.supabase.supabaseKey.substring(0, 20)}...`);
+            }
+        }
+
+        async function testGetSession() {
+            log('🧪 Testando getSession()...');
+            try {
+                const session = await window.fikahSupabase.supabase.auth.getSession();
+                log(`📊 getSession resultado: ${JSON.stringify(session, null, 2)}`);
+            } catch (error) {
+                log(`❌ Erro em getSession: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetUser() {
+            log('🧪 Testando getUser()...');
+            try {
+                const user = await window.fikahSupabase.supabase.auth.getUser();
+                log(`📊 getUser resultado: ${JSON.stringify(user, null, 2)}`);
+            } catch (error) {
+                log(`❌ Erro em getUser: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWaitForSession() {
+            log('🧪 Testando waitForSession()...');
+            try {
+                const session = await window.fikahSupabase.waitForSession(5);
+                log(`📊 waitForSession resultado: ${JSON.stringify(session, null, 2)}`);
+            } catch (error) {
+                log(`❌ Erro em waitForSession: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateAppCheck() {
+            log('🧪 Simulando verificação do app (index.html)...');
+            try {
+                // Simular o que acontece no index.html
+                log('⏳ Aguardando sessão (como no index.html)...');
+                const session = await window.fikahSupabase.waitForSession(15);
+                
+                if (session) {
+                    log('✅ Sessão encontrada - app seria carregado', 'success');
+                    const currentUser = await window.fikahSupabase.getCurrentUser();
+                    log(`👤 Usuário atual: ${currentUser.user ? currentUser.user.email : 'Nenhum'}`);
+                } else {
+                    log('❌ Sessão não encontrada - redirecionaria para login', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro na simulação: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRedirect() {
+            log('🧪 Testando redirecionamento manual...');
+            log('🔄 Redirecionando para /app em 3 segundos...');
+            setTimeout(() => {
+                window.location.href = '/app';
+            }, 3000);
+        }
+
+        // Verificar status ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkSystemStatus, 1000);
+        });
+    </script>
+</body>
+</html>
