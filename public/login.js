@@ -162,6 +162,32 @@ async function getUserLocation() {
     });
 }
 
+// Verificar se o usuário está retornando da confirmação de email
+function checkEmailConfirmation() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('confirmed') === 'true') {
+        if (window.notifications) {
+            window.notifications.success('Email confirmado com sucesso! Agora você pode fazer login.');
+        } else {
+            alert('Email confirmado com sucesso! Agora você pode fazer login.');
+        }
+        
+        // Limpar a URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+// Função para alternar entre abas
+function switchTab(activeTab, inactiveTab, activeForm, inactiveForm) {
+    // Remover classe ativa da aba inativa
+    inactiveTab.classList.remove('active');
+    inactiveForm.classList.remove('active');
+    
+    // Adicionar classe ativa na aba ativa
+    activeTab.classList.add('active');
+    activeForm.classList.add('active');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
     const loginTab = document.querySelector('[data-tab="login"]');
@@ -178,13 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Função para alternar entre abas
-    function switchTab(activeTab, inactiveTab, activeForm, inactiveForm) {
-        activeTab.classList.add('active');
-        inactiveTab.classList.remove('active');
-        activeForm.classList.add('active');
-        inactiveForm.classList.remove('active');
-    }
+    // Verificar confirmação de email ao carregar a página
+    checkEmailConfirmation();
 
     // Event listeners para as abas
     if (loginTab && registerTab && loginForm && registerForm) {
@@ -425,6 +446,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const result = await window.fikahSupabase.registerUser(userData);
                 
+                console.log('Resultado do registro:', result);
+
+                // Se precisa confirmar email
+                if (result.needsEmailConfirmation) {
+                    // Mostrar mensagem de sucesso
+                    if (window.notifications) {
+                        window.notifications.success(result.message || 'Cadastro realizado! Verifique seu email para confirmar a conta.');
+                    } else {
+                        alert(result.message || 'Cadastro realizado! Verifique seu email para confirmar a conta.');
+                    }
+                    
+                    // Aguardar um pouco para o usuário ler a mensagem
+                    setTimeout(() => {
+                        // Alternar para a aba de login
+                        if (loginTab && registerTab && loginForm && registerForm) {
+                            switchTab(loginTab, registerTab, loginForm, registerForm);
+                        }
+                        
+                        // Mostrar mensagem na tela de login
+                        setTimeout(() => {
+                            if (window.notifications) {
+                                window.notifications.info('Verifique seu email e clique no link de confirmação para ativar sua conta.');
+                            }
+                        }, 500);
+                    }, 2000);
+                    
+                    return;
+                }
+
+                // Se não precisa confirmar email, fazer login automático
                 if (result.user) {
                     // Cadastro bem-sucedido
                     localStorage.setItem('isLoggedIn', 'true');
