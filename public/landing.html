@@ -3,352 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FIKA - Encontros Autênticos</title>
-    <link rel="stylesheet" href="landing.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <title>FIKA - Encontros Autênticos Começam Aqui</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'fika-purple': '#6366f1',
+                        'fika-purple-dark': '#4f46e5',
+                        'fika-pink': '#ec4899',
+                        'fika-pink-dark': '#db2777',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Fallback para Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .phone-mockup {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.8); }
+        }
     </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="fontawesome-fallback.css">
 </head>
-<body>
-    <div class="landing-container">
-        <!-- Header -->
-        <header class="landing-header">
-            <div class="logo">FIKA</div>
-            <nav class="header-nav">
-                <a href="#features">Recursos</a>
-                <a href="#testimonials">Depoimentos</a>
-                <a href="#pricing">Planos</a>
-                <a href="#about">Sobre</a>
-            </nav>
-            <div class="header-buttons">
-                <a href="/login" class="btn-login">Entrar</a>
-                <a href="/login" class="btn-signup">Cadastrar</a>
-            </div>
-        </header>
-
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Encontros Autênticos Começam Aqui</h1>
-                <p>Descubra conexões reais em um ambiente seguro e inclusivo. O FIKA é mais que um app de encontros - é onde relacionamentos genuínos florescem.</p>
-                <a href="/login" class="btn-start">
-                    <span>Começar agora</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">50K+</span>
-                        <span class="stat-label">Usuários ativos</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">95%</span>
-                        <span class="stat-label">Taxa de satisfação</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">24/7</span>
-                        <span class="stat-label">Suporte disponível</span>
-                    </div>
+<body class="font-sans overflow-x-hidden">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-white">FIKA</h1>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#recursos" class="text-white/80 hover:text-white transition-colors">Recursos</a>
+                    <a href="#precos" class="text-white/80 hover:text-white transition-colors">Preços</a>
+                    <a href="#sobre" class="text-white/80 hover:text-white transition-colors">Sobre</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <a href="login.html" class="text-white/80 hover:text-white transition-colors">Entrar</a>
+                    <a href="login.html" class="bg-white text-fika-purple px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                        Cadastrar
+                    </a>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="phone-mockup">
-                    <div class="phone-screen">
-                        <div class="app-preview">
-                            <div class="profile-card">
-                                <div class="profile-image"></div>
-                                <h3>Ana, 28</h3>
-                                <p>São Paulo, SP</p>
-                                <div class="interests">
-                                    <span>Música</span>
-                                    <span>Viagem</span>
-                                    <span>Arte</span>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg min-h-screen flex items-center pt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Content -->
+                <div class="text-white space-y-8">
+                    <div class="space-y-4">
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+                            Encontros Autênticos
+                            <span class="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300">
+                                Começam Aqui
+                            </span>
+                        </h1>
+                        <p class="text-xl sm:text-2xl text-white/90 max-w-2xl">
+                            Descubra conexões reais em um ambiente seguro e inclusivo. 
+                            O app de encontros onde relacionamentos genuínos florescem.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="login.html" class="bg-white text-fika-purple px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 text-center">
+                            Começar agora →
+                        </a>
+                        <button class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-fika-purple transition-all">
+                            Saiba mais
+                        </button>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-8 pt-8">
+                        <div class="text-center">
+                            <div class="text-3xl sm:text-4xl font-bold">50K+</div>
+                            <div class="text-white/80 text-sm sm:text-base">Usuários ativos</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl sm:text-4xl font-bold">95%</div>
+                            <div class="text-white/80 text-sm sm:text-base">Taxa de satisfação</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl sm:text-4xl font-bold">24/7</div>
+                            <div class="text-white/80 text-sm sm:text-base">Suporte disponível</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Mockup -->
+                <div class="flex justify-center lg:justify-end">
+                    <div class="relative">
+                        <div class="phone-mockup w-72 h-[600px] rounded-[3rem] p-4 floating-animation">
+                            <div class="w-full h-full bg-gradient-to-b from-fika-purple to-fika-pink rounded-[2.5rem] p-6 flex flex-col">
+                                <!-- Phone Header -->
+                                <div class="flex justify-between items-center mb-8">
+                                    <div class="w-12 h-12 bg-white/20 rounded-full"></div>
+                                    <div class="text-white font-bold text-lg">FIKA</div>
+                                    <div class="w-12 h-12 bg-white/20 rounded-full"></div>
+                                </div>
+                                
+                                <!-- Profile Card -->
+                                <div class="bg-white rounded-2xl p-6 mb-6 flex-1">
+                                    <div class="w-20 h-20 bg-gradient-to-br from-fika-purple to-fika-pink rounded-full mx-auto mb-4"></div>
+                                    <h3 class="text-xl font-bold text-center text-gray-800">Ana, 28</h3>
+                                    <p class="text-gray-600 text-center mb-2">São Paulo, SP</p>
+                                    <div class="flex justify-center space-x-2 mb-4">
+                                        <span class="bg-gray-100 px-3 py-1 rounded-full text-sm">Música</span>
+                                        <span class="bg-gray-100 px-3 py-1 rounded-full text-sm">Viagem</span>
+                                    </div>
+                                    <div class="bg-gray-100 px-3 py-1 rounded-full text-sm text-center">Arte</div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="flex justify-center space-x-4">
+                                    <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-2xl">✕</span>
+                                    </div>
+                                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center pulse-glow">
+                                        <span class="text-fika-purple text-2xl">♥</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="floating-card card1">
-                    <i class="fas fa-heart"></i>
-                    <span>Match!</span>
-                </div>
-                <div class="floating-card card2">
-                    <i class="fas fa-message"></i>
-                    <span>Nova mensagem</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section id="features" class="features">
-            <h2>Por que escolher o FIKA?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Segurança em Primeiro Lugar</h3>
-                    <p>Verificação de perfis, moderação 24/7 e ferramentas avançadas de privacidade para garantir sua segurança.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Comunidade Inclusiva</h3>
-                    <p>Um espaço acolhedor para todas as orientações, identidades e tipos de relacionamento.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>Algoritmo Inteligente</h3>
-                    <p>Matches baseados em compatibilidade real, não apenas aparência. Encontre quem realmente combina com você.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <h3>Chamadas de Vídeo</h3>
-                    <p>Conheça melhor seus matches com chamadas de vídeo seguras dentro do app.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <h3>Eventos Locais</h3>
-                    <p>Participe de eventos e encontros organizados pela comunidade FIKA na sua cidade.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <h3>Experiência Premium</h3>
-                    <p>Recursos exclusivos para quem busca uma experiência ainda mais personalizada.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section class="how-it-works">
-            <h2>Como funciona</h2>
-            <div class="steps-container">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Crie seu perfil</h3>
-                        <p>Conte sua história de forma autêntica. Adicione fotos, interesses e o que você busca.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Descubra pessoas</h3>
-                        <p>Nosso algoritmo inteligente sugere perfis compatíveis com seus interesses e valores.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Conecte-se</h3>
-                        <p>Converse, compartilhe momentos e construa conexões genuínas em um ambiente seguro.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Encontre-se</h3>
-                        <p>Quando se sentirem confortáveis, marquem um encontro e vivam momentos especiais juntos.</p>
+                        
+                        <!-- Floating Elements -->
+                        <div class="absolute -top-4 -right-4 w-8 h-8 bg-yellow-300 rounded-full opacity-80 floating-animation" style="animation-delay: -2s;"></div>
+                        <div class="absolute -bottom-4 -left-4 w-6 h-6 bg-pink-300 rounded-full opacity-80 floating-animation" style="animation-delay: -4s;"></div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="testimonials">
-            <h2>O que nossos usuários dizem</h2>
-            <div class="testimonials-container">
-                <div class="testimonial-card">
-                    <div class="testimonial-avatar">
-                        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23ff4b8d'/><circle cx='50' cy='40' r='15' fill='white'/><path d='M25 75 Q50 60 75 75' stroke='white' stroke-width='8' fill='none'/></svg>" alt="Maria">
-                    </div>
-                    <p class="testimonial-text">"Encontrei meu parceiro no FIKA há 2 anos. O que mais me impressionou foi a qualidade das pessoas e a segurança da plataforma."</p>
-                    <div class="testimonial-name">Maria Silva</div>
-                    <div class="testimonial-rating">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-avatar">
-                        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23667eea'/><circle cx='50' cy='40' r='15' fill='white'/><path d='M25 75 Q50 60 75 75' stroke='white' stroke-width='8' fill='none'/></svg>" alt="João">
-                    </div>
-                    <p class="testimonial-text">"A comunidade FIKA é incrível! Fiz amizades duradouras e encontrei pessoas que realmente me entendem."</p>
-                    <div class="testimonial-name">João Santos</div>
-                    <div class="testimonial-rating">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-avatar">
-                        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23ff6b35'/><circle cx='50' cy='40' r='15' fill='white'/><path d='M25 75 Q50 60 75 75' stroke='white' stroke-width='8' fill='none'/></svg>" alt="Ana">
-                    </div>
-                    <p class="testimonial-text">"Como pessoa trans, me senti acolhida desde o primeiro dia. O FIKA realmente promove a inclusão e o respeito."</p>
-                    <div class="testimonial-name">Ana Costa</div>
-                    <div class="testimonial-rating">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                </div>
+    <!-- Features Section -->
+    <section id="recursos" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Por que escolher o FIKA?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Recursos inovadores que tornam cada encontro uma experiência única e segura
+                </p>
             </div>
-        </section>
-
-        <!-- Pricing Section -->
-        <section id="pricing" class="pricing">
-            <h2>Escolha seu plano</h2>
-            <div class="pricing-cards">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Gratuito</h3>
-                        <div class="price">R$ 0<span>/mês</span></div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-gradient-to-br from-fika-purple to-fika-pink rounded-2xl flex items-center justify-center mb-6">
+                        <span class="text-white text-2xl">🔒</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Perfil básico</li>
-                        <li><i class="fas fa-check"></i> 10 likes por dia</li>
-                        <li><i class="fas fa-check"></i> Matches ilimitados</li>
-                        <li><i class="fas fa-check"></i> Chat básico</li>
-                        <li><i class="fas fa-check"></i> Filtros básicos</li>
-                    </ul>
-                    <a href="/login" class="btn-pricing">Começar Grátis</a>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Segurança Total</h3>
+                    <p class="text-gray-600">
+                        Verificação de identidade, moderação 24/7 e ferramentas avançadas de privacidade para sua proteção.
+                    </p>
                 </div>
                 
-                <div class="pricing-card premium">
-                    <div class="pricing-badge">Mais Popular</div>
-                    <div class="pricing-header">
-                        <h3>Premium</h3>
-                        <div class="price">R$ 29,90<span>/mês</span></div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-gradient-to-br from-fika-purple to-fika-pink rounded-2xl flex items-center justify-center mb-6">
+                        <span class="text-white text-2xl">🎯</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Tudo do plano gratuito</li>
-                        <li><i class="fas fa-check"></i> Likes ilimitados</li>
-                        <li><i class="fas fa-check"></i> Super likes diários</li>
-                        <li><i class="fas fa-check"></i> Chamadas de vídeo</li>
-                        <li><i class="fas fa-check"></i> Filtros avançados</li>
-                        <li><i class="fas fa-check"></i> Ver quem curtiu você</li>
-                        <li><i class="fas fa-check"></i> Boost mensal</li>
-                    </ul>
-                    <a href="/login" class="btn-pricing premium">Assinar Premium</a>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Matches Inteligentes</h3>
+                    <p class="text-gray-600">
+                        Algoritmo avançado que considera personalidade, interesses e valores para conexões mais profundas.
+                    </p>
                 </div>
                 
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Premium Anual</h3>
-                        <div class="price">R$ 19,90<span>/mês</span></div>
-                        <div class="price-save">Economize 33%</div>
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="w-16 h-16 bg-gradient-to-br from-fika-purple to-fika-pink rounded-2xl flex items-center justify-center mb-6">
+                        <span class="text-white text-2xl">💬</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Tudo do Premium</li>
-                        <li><i class="fas fa-check"></i> Desconto exclusivo</li>
-                        <li><i class="fas fa-check"></i> Suporte prioritário</li>
-                        <li><i class="fas fa-check"></i> Acesso antecipado</li>
-                        <li><i class="fas fa-check"></i> Badge exclusivo</li>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Chat Inovador</h3>
+                    <p class="text-gray-600">
+                        Quebra-gelos personalizados, chamadas de vídeo seguras e jogos interativos para conhecer melhor.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="precos" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Planos que cabem no seu bolso</h2>
+                <p class="text-xl text-gray-600">
+                    Escolha o plano ideal para encontrar sua pessoa especial
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Plano Mensal -->
+                <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-fika-purple transition-colors">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Plano Mensal</h3>
+                        <div class="text-5xl font-bold text-fika-purple mb-2">R$ 24,90</div>
+                        <p class="text-gray-600">por mês</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Matches ilimitados</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Super Likes diários</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Chat sem limitações</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-green-500 mr-3">✓</span>
+                            <span>Verificação de perfil</span>
+                        </li>
                     </ul>
-                    <a href="/login" class="btn-pricing">Assinar Anual</a>
+                    
+                    <a href="login.html" class="w-full bg-fika-purple text-white py-4 rounded-xl font-semibold text-lg hover:bg-fika-purple-dark transition-colors block text-center">
+                        Começar agora
+                    </a>
+                </div>
+                
+                <!-- Plano Anual -->
+                <div class="bg-gradient-to-br from-fika-purple to-fika-pink text-white rounded-2xl p-8 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 bg-yellow-300 text-fika-purple px-3 py-1 rounded-full text-sm font-bold">
+                        MAIS POPULAR
+                    </div>
+                    
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold mb-2">Plano Anual</h3>
+                        <div class="text-5xl font-bold mb-2">R$ 19,90</div>
+                        <p class="text-white/80">por mês (cobrado anualmente)</p>
+                        <p class="text-sm text-yellow-300 mt-2">Economize 20%</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Tudo do plano mensal</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Boost mensal gratuito</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Filtros avançados</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-300 mr-3">✓</span>
+                            <span>Suporte prioritário</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="login.html" class="w-full bg-white text-fika-purple py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors block text-center">
+                        Economizar 20%
+                    </a>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- About Section -->
-        <section id="about" class="about">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Sobre o FIKA</h2>
-                    <p>O FIKA nasceu da necessidade de criar um espaço digital onde pessoas possam se conectar de forma autêntica e segura. Nosso nome vem da tradição sueca de fazer uma pausa para café e conversa - momentos simples que criam conexões profundas.</p>
-                    <p>Acreditamos que todos merecem encontrar alguém especial, independentemente de sua orientação, identidade ou tipo de relacionamento que buscam. Por isso, criamos uma plataforma inclusiva, segura e focada em conexões genuínas.</p>
-                    <div class="about-values">
-                        <div class="value">
-                            <i class="fas fa-heart"></i>
-                            <span>Autenticidade</span>
-                        </div>
-                        <div class="value">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Segurança</span>
-                        </div>
-                        <div class="value">
-                            <i class="fas fa-users"></i>
-                            <span>Inclusão</span>
-                        </div>
-                        <div class="value">
-                            <i class="fas fa-star"></i>
-                            <span>Qualidade</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="about-image">
-                    <div class="about-graphic">
-                        <div class="connection-line"></div>
-                        <div class="user-avatar user1"></div>
-                        <div class="user-avatar user2"></div>
-                        <div class="user-avatar user3"></div>
-                        <div class="heart-icon">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="cta">
-            <h2>Pronto para encontrar sua pessoa especial?</h2>
-            <p>Junte-se a milhares de pessoas que já encontraram conexões autênticas no FIKA. Sua jornada começa agora.</p>
-            <a href="/login" class="btn-cta">
-                <span>Começar minha jornada</span>
-                <i class="fas fa-arrow-right"></i>
+    <!-- CTA Section -->
+    <section class="gradient-bg py-20">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl sm:text-5xl font-bold text-white mb-6">
+                Pronto para encontrar sua pessoa especial?
+            </h2>
+            <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                Junte-se a milhares de pessoas que já encontraram o amor verdadeiro no FIKA
+            </p>
+            <a href="login.html" class="bg-white text-fika-purple px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 inline-block">
+                Começar minha jornada →
             </a>
-        </section>
+        </div>
+    </section>
 
-        <!-- Footer -->
-        <footer class="landing-footer">
-            <div class="footer-content">
-                <div class="footer-logo">FIKA</div>
-                <div class="footer-links">
-                    <a href="#privacy">Privacidade</a>
-                    <a href="#terms">Termos de Uso</a>
-                    <a href="#support">Suporte</a>
-                    <a href="#blog">Blog</a>
-                    <a href="#careers">Carreiras</a>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">FIKA</h3>
+                    <p class="text-gray-400">
+                        Conectando corações, criando histórias de amor autênticas.
+                    </p>
                 </div>
-                <div class="footer-social">
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Produto</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Recursos</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Preços</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Segurança</a></li>
+                    </ul>
                 </div>
-                <div class="copyright">
-                    © 2024 FIKA. Todos os direitos reservados. Feito com ❤️ para conectar pessoas.
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Empresa</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Sobre nós</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Carreiras</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contato</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Suporte</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Central de ajuda</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Privacidade</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Termos</a></li>
+                    </ul>
                 </div>
             </div>
-        </footer>
-    </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 FIKA. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        // Smooth scrolling para links de navegação
+        // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -362,60 +367,13 @@
             });
         });
 
-        // Animação de números nas estatísticas
-        function animateNumbers() {
-            const stats = document.querySelectorAll('.stat-number');
-            stats.forEach(stat => {
-                const target = stat.textContent;
-                const isPercentage = target.includes('%');
-                const isK = target.includes('K');
-                const number = parseInt(target.replace(/[^\d]/g, ''));
-                
-                let current = 0;
-                const increment = number / 50;
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= number) {
-                        current = number;
-                        clearInterval(timer);
-                    }
-                    
-                    let display = Math.floor(current);
-                    if (isK) display += 'K';
-                    if (isPercentage) display += '%';
-                    if (target.includes('24/7')) display = '24/7';
-                    
-                    stat.textContent = display;
-                }, 50);
-            });
-        }
-
-        // Intersection Observer para animações
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate');
-                    if (entry.target.classList.contains('hero-stats')) {
-                        animateNumbers();
-                    }
-                }
-            });
-        });
-
-        // Observar elementos para animação
-        document.querySelectorAll('.feature-card, .testimonial-card, .pricing-card, .step, .hero-stats').forEach(el => {
-            observer.observe(el);
-        });
-
-        // Header scroll effect
+        // Add scroll effect to header
         window.addEventListener('scroll', () => {
-            const header = document.querySelector('.landing-header');
+            const header = document.querySelector('header');
             if (window.scrollY > 100) {
-                header.style.background = 'rgba(255, 255, 255, 0.98)';
-                header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.1)';
+                header.style.background = 'rgba(99, 102, 241, 0.95)';
             } else {
-                header.style.background = 'rgba(255, 255, 255, 0.95)';
-                header.style.boxShadow = 'none';
+                header.style.background = 'rgba(255, 255, 255, 0.1)';
             }
         });
     </script>
