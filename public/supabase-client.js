@@ -119,6 +119,52 @@ class SupabaseClient {
 
     // Registrar novo usuário
     async registerUser(userData) {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            try {
+                // Verificar se email já existe
+                const existingUsers = JSON.parse(localStorage.getItem('fika_users') || '[]');
+                const emailExists = existingUsers.find(u => u.email === userData.email);
+                
+                if (emailExists) {
+                    throw new Error('Email já cadastrado');
+                }
+                
+                // Criar novo usuário
+                const userId = 'user_' + Date.now();
+                const newUser = {
+                    id: userId,
+                    email: userData.email,
+                    password: userData.password, // Em produção, isso seria hasheado
+                    user_metadata: {
+                        name: userData.name,
+                        age: userData.age,
+                        location: userData.location,
+                        birthdate: userData.birthdate,
+                        interests: userData.interests || [],
+                        relationshipTypes: userData.relationshipTypes || [],
+                        lookingFor: userData.lookingFor || [],
+                        genderPreferences: userData.genderPreferences || [],
+                        ageConfirmed: userData.ageConfirmed || false
+                    },
+                    created_at: new Date().toISOString()
+                };
+                
+                // Salvar usuário
+                existingUsers.push(newUser);
+                localStorage.setItem('fika_users', JSON.stringify(existingUsers));
+                
+                // Fazer login automático
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                return { user: newUser, profile: newUser.user_metadata };
+            } catch (error) {
+                console.error('Erro no registro localStorage:', error);
+                throw error;
+            }
+        }
+        
         try {
             // Registrar usuário no Supabase Auth
             const { data: authData, error: authError } = await this.client.auth.signUp({
@@ -164,6 +210,27 @@ class SupabaseClient {
 
     // Login do usuário
     async loginUser(email, password) {
+        if (this.useLocalStorage) {
+            // Fallback usando localStorage
+            try {
+                const existingUsers = JSON.parse(localStorage.getItem('fika_users') || '[]');
+                const user = existingUsers.find(u => u.email === email && u.password === password);
+                
+                if (!user) {
+                    throw new Error('Invalid login credentials');
+                }
+                
+                // Fazer login
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                return { user: user };
+            } catch (error) {
+                console.error('Erro no login localStorage:', error);
+                throw error;
+            }
+        }
+        
         try {
             const { data, error } = await this.client.auth.signInWithPassword({
                 email,

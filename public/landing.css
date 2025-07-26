@@ -9,6 +9,7 @@ html {
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -47,6 +48,7 @@ body {
     width: 100%;
     max-width: 100vw;
     box-sizing: border-box;
+    height: 80px; /* Altura fixa para evitar sobreposição */
 }
 
 .logo {
@@ -137,16 +139,16 @@ body {
     box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
 }
 
-/* Hero Section */
+/* Hero Section - CORRIGIDO PARA EVITAR SOBREPOSIÇÃO */
 .hero {
-    padding: 10rem 2rem 4rem;
+    padding: 120px 2rem 4rem; /* Aumentado padding-top para compensar header fixo */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
-    min-height: 100vh;
+    min-height: calc(100vh - 80px); /* Ajustado para altura do header */
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
@@ -156,14 +158,15 @@ body {
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+    padding-right: 1rem; /* Espaçamento extra para evitar corte */
 }
 
 .hero-content h1 {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: white;
-    margin-bottom: 1rem;
-    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
@@ -171,10 +174,10 @@ body {
 }
 
 .hero-content p {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
+    margin-bottom: 2rem;
+    line-height: 1.6;
     word-wrap: break-word;
     overflow-wrap: break-word;
     max-width: 100%;
@@ -184,19 +187,470 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.8rem 1.6rem;
+    padding: 1rem 2rem;
     background: rgba(255, 255, 255, 0.2);
     color: white;
     text-decoration: none;
     border-radius: 50px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1rem;
     backdrop-filter: blur(20px);
     border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
     white-space: nowrap;
     box-sizing: border-box;
     max-width: 100%;
+}
+
+.btn-start:hover {
+    background: white;
+    color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.hero-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+}
+
+.stat {
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+    max-width: 100%;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    word-wrap: break-word;
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    word-wrap: break-word;
+}
+
+.hero-image {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    padding: 1rem;
+}
+
+.phone-mockup {
+    width: 280px;
+    height: 500px;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border-radius: 35px;
+    padding: 15px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    max-width: calc(100% - 2rem);
+    max-height: calc(100vh - 200px);
+    box-sizing: border-box;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.phone-mockup::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    z-index: 2;
+}
+
+.phone-mockup img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 25px;
+    display: block;
+}
+
+/* Animações flutuantes para elementos decorativos */
+.floating-element {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-element:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floating-element:nth-child(2) {
+    width: 60px;
+    height: 60px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 2s;
+}
+
+.floating-element:nth-child(3) {
+    width: 40px;
+    height: 40px;
+    bottom: 30%;
+    left: 20%;
+    animation-delay: 4s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding: 0.5rem;
+    flex-shrink: 0;
+}
+
+.mobile-menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background: #333;
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+/* Responsividade MELHORADA */
+@media (max-width: 1024px) {
+    .landing-header {
+        padding: 1rem 1.5rem;
+        height: 70px;
+    }
+    
+    .hero {
+        padding: 100px 2rem 3rem; /* Ajustado para header menor */
+        gap: 2rem;
+        max-width: 100%;
+        overflow: hidden;
+        min-height: calc(100vh - 70px);
+    }
+    
+    .hero-content h1 {
+        font-size: 2.2rem;
+        max-width: 100%;
+        overflow-wrap: break-word;
+    }
+    
+    .hero-content p {
+        font-size: 1rem;
+    }
+    
+    .phone-mockup {
+        width: 240px;
+        height: 420px;
+        max-width: calc(100% - 1rem);
+        max-height: calc(100vh - 180px);
+    }
+    
+    .hero-image {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .landing-header {
+        padding: 1rem;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        width: 100%;
+        max-width: 100vw;
+        height: 60px; /* Header mais compacto no mobile */
+    }
+    
+    .header-nav {
+        display: none;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+    }
+    
+    .header-buttons {
+        gap: 0.5rem;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+    
+    .btn-login, .btn-signup {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        min-width: auto;
+        flex-shrink: 0;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 80px 1.5rem 2rem; /* Padding reduzido para header menor */
+        gap: 2rem;
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        overflow: hidden;
+        min-height: calc(100vh - 60px);
+    }
+    
+    .hero-content {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        padding-right: 0;
+        order: 1; /* Conteúdo primeiro no mobile */
+    }
+    
+    .hero-image {
+        order: 2; /* Imagem depois no mobile */
+    }
+    
+    .hero-content h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+        line-height: 1.3;
+    }
+    
+    .hero-content p {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
+    
+    .btn-start {
+        padding: 0.8rem 1.6rem;
+        font-size: 0.9rem;
+    }
+    
+    .hero-stats {
+        gap: 1.5rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .stat {
+        flex: 1;
+        min-width: 100px;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        overflow-wrap: break-word;
+    }
+    
+    .stat-label {
+        overflow-wrap: break-word;
+        font-size: 0.85rem;
+    }
+    
+    .phone-mockup {
+        width: 200px;
+        height: 360px;
+        padding: 12px;
+        max-width: calc(100vw - 3rem);
+        max-height: 400px;
+    }
+    
+    .hero-image {
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .landing-header {
+        padding: 0.75rem;
+        overflow: hidden;
+        width: 100%;
+        max-width: 100vw;
+        height: 55px; /* Header ainda mais compacto */
+    }
+    
+    .logo {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    
+    .btn-login, .btn-signup {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+        min-width: auto;
+    }
+    
+    .hero {
+        padding: 70px 1rem 2rem; /* Padding ainda menor */
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        min-height: calc(100vh - 55px);
+    }
+    
+    .hero-content {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 0;
+    }
+    
+    .hero-content h1 {
+        font-size: 1.5rem;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+        margin-bottom: 0.8rem;
+    }
+    
+    .hero-content p {
+        font-size: 0.85rem;
+        margin-bottom: 1.2rem;
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        line-height: 1.5;
+    }
+    
+    .btn-start {
+        padding: 0.7rem 1.4rem;
+        font-size: 0.85rem;
+        width: auto;
+        max-width: 100%;
+    }
+    
+    .hero-stats {
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .stat {
+        flex: 1;
+        min-width: 80px;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .stat-number {
+        font-size: 1.4rem;
+        overflow-wrap: break-word;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        overflow-wrap: break-word;
+    }
+    
+    .phone-mockup {
+        width: 160px;
+        height: 280px;
+        padding: 10px;
+        max-width: calc(100vw - 2rem);
+        max-height: 320px;
+    }
+    
+    .hero-image {
+        padding: 0.5rem;
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+    }
+    
+    /* Ocultar elementos flutuantes em telas muito pequenas */
+    .floating-element {
+        display: none;
+    }
+}
+
+/* Melhorias adicionais para evitar overflow */
+@media (max-width: 360px) {
+    .hero {
+        padding: 65px 0.75rem 1.5rem;
+    }
+    
+    .hero-content h1 {
+        font-size: 1.3rem;
+    }
+    
+    .hero-content p {
+        font-size: 0.8rem;
+    }
+    
+    .btn-start {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.8rem;
+    }
+    
+    .phone-mockup {
+        width: 140px;
+        height: 250px;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+    }
 }
 
 .btn-start:hover {
