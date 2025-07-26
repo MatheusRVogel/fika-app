@@ -1,10 +1,10 @@
-// Configuração da API para o frontend
-class FikaAPI {
+// FIKAH API - Gerenciamento de dados e comunicação
+class FikahAPI {
     constructor() {
         this.baseURL = window.location.origin;
         this.apiURL = `${this.baseURL}/api`;
         this.currentUser = null;
-        this.token = localStorage.getItem('fika_token');
+        this.token = localStorage.getItem('fikah_token');
     }
 
     // Configurar headers padrão
@@ -73,8 +73,8 @@ class FikaAPI {
     logout() {
         this.currentUser = null;
         this.token = null;
-        localStorage.removeItem('fika_token');
-        localStorage.removeItem('fika_user');
+        localStorage.removeItem('fikah_token');
+        localStorage.removeItem('fikah_user');
         window.location.href = '/login';
     }
 
@@ -82,14 +82,14 @@ class FikaAPI {
         this.currentUser = user;
         if (token) {
             this.token = token;
-            localStorage.setItem('fika_token', token);
+            localStorage.setItem('fikah_token', token);
         }
-        localStorage.setItem('fika_user', JSON.stringify(user));
+        localStorage.setItem('fikah_user', JSON.stringify(user));
     }
 
     getCurrentUser() {
         if (!this.currentUser) {
-            const stored = localStorage.getItem('fika_user');
+            const stored = localStorage.getItem('fikah_user');
             if (stored) {
                 this.currentUser = JSON.parse(stored);
             }
@@ -162,7 +162,7 @@ class FikaAPI {
 }
 
 // Configuração do Stripe
-class FikaStripe {
+class FikahStripe {
     constructor() {
         this.stripe = null;
         this.initStripe();
@@ -197,7 +197,7 @@ class FikaStripe {
 }
 
 // Utilitários
-class FikaUtils {
+class FikahUtils {
     static formatDate(dateString) {
         const date = new Date(dateString);
         const now = new Date();
@@ -294,9 +294,9 @@ class FikaUtils {
 }
 
 // Inicializar instâncias globais
-window.fikaAPI = new FikaAPI();
-window.fikaStripe = new FikaStripe();
-window.fikaUtils = FikaUtils;
+window.fikahAPI = new FikahAPI();
+window.fikahStripe = new FikahStripe();
+window.fikahUtils = FikahUtils;
 
 // Adicionar estilos para toast
 const toastStyles = document.createElement('style');
@@ -313,4 +313,4 @@ toastStyles.textContent = `
 `;
 document.head.appendChild(toastStyles);
 
-console.log('🚀 Fika API inicializada!');
+console.log('🚀 Fikah API inicializada!');

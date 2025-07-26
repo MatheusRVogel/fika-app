@@ -121,7 +121,7 @@
                         <div class="stories-container">
                             <div class="story-item add-story">
                                 <div class="story-avatar">
-                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" alt="Seu story">
+                                    <img src="placeholder.svg" alt="Seu story">
                                     <div class="add-story-icon">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -133,19 +133,19 @@
                             </div>
                             <div class="story-item" data-story-id="1">
                                 <div class="story-avatar">
-                                    <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face" alt="Ana Silva">
+                                    <img src="placeholder.svg" alt="Ana Silva">
                                 </div>
                                 <span class="story-name">Ana</span>
                             </div>
                             <div class="story-item viewed" data-story-id="2">
                                 <div class="story-avatar">
-                                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="Carlos Santos">
+                                    <img src="placeholder.svg" alt="Carlos Santos">
                                 </div>
                                 <span class="story-name">Carlos</span>
                             </div>
                             <div class="story-item" data-story-id="3">
                                 <div class="story-avatar">
-                                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" alt="Maria">
+                                    <img src="placeholder.svg" alt="Maria">
                                 </div>
                                 <span class="story-name">Maria</span>
                             </div>
@@ -508,19 +508,19 @@
             let attempts = 0;
             const maxAttempts = 50; // 5 segundos máximo
             
-            while (!window.fikaSupabase && attempts < maxAttempts) {
+            while (!window.fikahSupabase && attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
             }
             
-            if (!window.fikaSupabase) {
+            if (!window.fikahSupabase) {
                 console.error('❌ Supabase não foi inicializado');
                 window.location.href = 'login.html';
                 return;
             }
             
             try {
-                const currentUser = await window.fikaSupabase.getCurrentUser();
+                const currentUser = await window.fikahSupabase.getCurrentUser();
                 
                 if (!currentUser || !currentUser.user) {
                     console.log('❌ Usuário não autenticado, redirecionando para login');
@@ -536,7 +536,7 @@
                     'stripe-config.js',
                     'free-user-limits.js',
                     'premium-manager.js',
-                    'fika-api.js',
+                    'fikah-api.js',
                     'app.js'
                 ];
                 

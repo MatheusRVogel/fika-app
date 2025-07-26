@@ -46,19 +46,19 @@ class FikahApp {
         let attempts = 0;
         const maxAttempts = 50;
         
-        while (!window.fikaSupabase && attempts < maxAttempts) {
+        while (!window.fikahSupabase && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
         
-        if (!window.fikaSupabase) {
+        if (!window.fikahSupabase) {
             throw new Error('Supabase não foi inicializado');
         }
     }
 
     async loadCurrentUser() {
         try {
-            const userResponse = await window.fikaSupabase.getCurrentUser();
+            const userResponse = await window.fikahSupabase.getCurrentUser();
             
             if (!userResponse || !userResponse.user) {
                 window.location.href = 'login.html';
@@ -200,7 +200,7 @@ class FikahApp {
         if (!this.currentUser || !this.currentUser.id) return;
         
         try {
-            const userProfile = await window.fikaSupabase.getUserProfile(this.currentUser.id);
+            const userProfile = await window.fikahSupabase.getUserProfile(this.currentUser.id);
             if (userProfile) {
                 this.displayUserPreferences(userProfile);
             }
@@ -1016,8 +1016,8 @@ class FikahApp {
             this.showNotification('Fazendo logout...', 'info');
             
             // Fazer logout no Supabase
-            if (window.fikaSupabase) {
-                await window.fikaSupabase.logoutUser();
+            if (window.fikahSupabase) {
+            await window.fikahSupabase.logoutUser();
             }
             
             // Limpar dados locais

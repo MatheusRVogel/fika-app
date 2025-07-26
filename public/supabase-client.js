@@ -123,7 +123,7 @@ class SupabaseClient {
             // Fallback usando localStorage
             try {
                 // Verificar se email já existe
-                const existingUsers = JSON.parse(localStorage.getItem('fika_users') || '[]');
+                const existingUsers = JSON.parse(localStorage.getItem('fikah_users') || '[]');
                 const emailExists = existingUsers.find(u => u.email === userData.email);
                 
                 if (emailExists) {
@@ -152,7 +152,7 @@ class SupabaseClient {
                 
                 // Salvar usuário
                 existingUsers.push(newUser);
-                localStorage.setItem('fika_users', JSON.stringify(existingUsers));
+                localStorage.setItem('fikah_users', JSON.stringify(existingUsers));
                 
                 // Fazer login automático
                 localStorage.setItem('currentUser', JSON.stringify(newUser));
@@ -213,7 +213,7 @@ class SupabaseClient {
         if (this.useLocalStorage) {
             // Fallback usando localStorage
             try {
-                const existingUsers = JSON.parse(localStorage.getItem('fika_users') || '[]');
+                const existingUsers = JSON.parse(localStorage.getItem('fikah_users') || '[]');
                 const user = existingUsers.find(u => u.email === email && u.password === password);
                 
                 if (!user) {
@@ -278,7 +278,7 @@ class SupabaseClient {
 // Aguardar o carregamento do DOM e do Supabase antes de inicializar
 function initializeSupabase() {
     if (typeof window.supabase !== 'undefined') {
-        window.fikaSupabase = new SupabaseClient();
+        window.fikahSupabase = new SupabaseClient();
     } else {
         console.log('Aguardando carregamento do Supabase...');
         setTimeout(initializeSupabase, 100);

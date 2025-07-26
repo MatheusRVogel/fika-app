@@ -1,8 +1,8 @@
-# FIKA - Plataforma de Encontros
+# FIKAH - Plataforma de Encontros
 
-## Sobre o Projeto
+## 🚀 Sobre o Projeto
 
-FIKA é uma plataforma de encontros moderna e intuitiva, projetada para conectar pessoas com interesses semelhantes. A plataforma oferece uma variedade de opções para diferentes tipos de relacionamentos, desde encontros casuais até relacionamentos mais sérios.
+FIKAH é uma plataforma de encontros moderna e intuitiva, projetada para conectar pessoas com interesses semelhantes. A plataforma oferece uma variedade de opções para diferentes tipos de relacionamentos, desde encontros casuais até relacionamentos mais sérios.
 
 ## Funcionalidades
 
@@ -84,4 +84,4 @@ Este projeto é uma demonstração front-end e não possui funcionalidades de ba
 
 ---
 
-© 2023 FIKA - Plataforma de Encontros. Todos os direitos reservados.
+© 2023 FIKAH - Plataforma de Encontros. Todos os direitos reservados.

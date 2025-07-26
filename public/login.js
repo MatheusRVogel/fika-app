@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
 
             try {
-                const result = await window.fikaSupabase.loginUser(email, password);
+                const result = await window.fikahSupabase.loginUser(email, password);
                 
                 if (result.user) {
                     // Login bem-sucedido
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ageConfirmed: true
                 };
 
-                const result = await window.fikaSupabase.registerUser(userData);
+                const result = await window.fikahSupabase.registerUser(userData);
                 
                 if (result.user) {
                     // Cadastro bem-sucedido
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('userId', result.user.id);
                     localStorage.setItem('showTrialModal', 'true');
                     
-                    alert('Cadastro realizado com sucesso! Bem-vindo ao Fika!');
+                    alert('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
                     window.location.href = '/app';
                 }
             } catch (error) {

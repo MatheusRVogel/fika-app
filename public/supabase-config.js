@@ -31,7 +31,7 @@ window.supabase = {
             };
             
             // Salvar no localStorage para persistência
-            const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
+            const users = JSON.parse(localStorage.getItem('fikah_users') || '[]');
             
             // Verificar se email já existe
             if (users.find(u => u.email === credentials.email)) {
@@ -39,14 +39,14 @@ window.supabase = {
             }
             
             users.push(user);
-            localStorage.setItem('fika_users', JSON.stringify(users));
+            localStorage.setItem('fikah_users', JSON.stringify(users));
             
             return { data: { user }, error: null };
         },
         
         signInWithPassword: async (credentials) => {
             // Simular login
-            const users = JSON.parse(localStorage.getItem('fika_users') || '[]');
+            const users = JSON.parse(localStorage.getItem('fikah_users') || '[]');
             const user = users.find(u => u.email === credentials.email);
             
             if (!user) {
