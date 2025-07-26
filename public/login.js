@@ -36,13 +36,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Função para obter localização automática
     if (getLocationBtn) {
-        getLocationBtn.addEventListener('click', function() {
+        getLocationBtn.addEventListener('click', async function() {
             if (navigator.geolocation) {
                 getLocationBtn.textContent = 'Obtendo localização...';
                 getLocationBtn.disabled = true;
                 
                 navigator.geolocation.getCurrentPosition(
-                    function(position) {
+                    async function(position) {
                         // Converter coordenadas em nome de cidade usando API de geocodificação
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Usando a API de geocodificação do OpenStreetMap (Nominatim)
                         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`)
                             .then(response => response.json())
-                            .then(data => {
+                            .then(async data => {
                                 // Tentar obter cidade de vários campos possíveis
                                 const city = data.address.city || 
                                            data.address.town || 

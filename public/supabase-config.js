@@ -1,10 +1,8 @@
 // Configuração do Supabase
-// Para desenvolvimento local, usando configuração mock
-
 const SUPABASE_CONFIG = {
-    // Configuração mock para desenvolvimento local
-    url: 'https://mock-project.supabase.co',
-    anonKey: 'mock-anon-key-for-development',
+    // Configuração real do Supabase
+    url: 'https://kujhzettkaitekulvhqt.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1amh6ZXR0a2FpdGVrdWx2aHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM0NzY3MjUsImV4cCI6MjA2OTA1MjcyNX0.etlkBCLU3g-6HC4CTbeX4s83bY4j1kIv4nE6Bt71iS8',
     
     // Configurações opcionais
     options: {
@@ -19,65 +17,7 @@ const SUPABASE_CONFIG = {
 // Exportar configuração para uso global
 window.SUPABASE_CONFIG = SUPABASE_CONFIG;
 
-// Mock do Supabase para desenvolvimento local
-window.supabase = {
-    auth: {
-        signUp: async (credentials) => {
-            // Simular cadastro bem-sucedido
-            const user = {
-                id: 'user_' + Date.now(),
-                email: credentials.email,
-                user_metadata: credentials.options?.data || {}
-            };
-            
-            // Salvar no localStorage para persistência
-            const users = JSON.parse(localStorage.getItem('fikah_users') || '[]');
-            
-            // Verificar se email já existe
-            if (users.find(u => u.email === credentials.email)) {
-                throw new Error('User already registered');
-            }
-            
-            users.push(user);
-            localStorage.setItem('fikah_users', JSON.stringify(users));
-            
-            return { data: { user }, error: null };
-        },
-        
-        signInWithPassword: async (credentials) => {
-            // Simular login
-            const users = JSON.parse(localStorage.getItem('fikah_users') || '[]');
-            const user = users.find(u => u.email === credentials.email);
-            
-            if (!user) {
-                throw new Error('Invalid login credentials');
-            }
-            
-            return { data: { user }, error: null };
-        },
-        
-        signOut: async () => {
-            return { error: null };
-        },
-        
-        getUser: async () => {
-            const currentUser = localStorage.getItem('currentUser');
-            if (currentUser) {
-                return { data: { user: JSON.parse(currentUser) }, error: null };
-            }
-            return { data: { user: null }, error: null };
-        }
-    },
-    
-    from: (table) => ({
-        insert: async (data) => ({ data, error: null }),
-        select: async () => ({ data: [], error: null }),
-        update: async (data) => ({ data, error: null }),
-        delete: async () => ({ data: null, error: null })
-    })
-};
-
-console.log('Supabase mock configurado para desenvolvimento local');
+console.log('✅ Supabase configurado com banco real:', SUPABASE_CONFIG.url);
 
 // Instruções para configuração:
 /*
