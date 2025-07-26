@@ -1102,11 +1102,18 @@ class FikahApp {
     createExploreUserElement(user) {
         const userDiv = document.createElement('div');
         userDiv.className = 'explore-card';
+        
+        // Criar string de informações do usuário
+        let userInfo = `${user.age} anos • ${user.location}`;
+        if (user.distance !== undefined) {
+            userInfo += ` • ${user.distance.toFixed(1)}km`;
+        }
+        
         userDiv.innerHTML = `
             <img src="${user.image}" alt="${user.name}" class="explore-card-image">
             <div class="explore-card-content">
                 <div class="explore-card-name">${user.name}</div>
-                <div class="explore-card-info">${user.age} anos • ${user.location}</div>
+                <div class="explore-card-info">${userInfo}</div>
                 <div class="explore-card-tags">
                     ${user.interests.map(interest => `<span class="tag">${interest}</span>`).join('')}
                 </div>
@@ -1274,18 +1281,96 @@ class FikahApp {
     }
 
     // New methods for added features
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        // Fórmula de Haversine para calcular distância entre duas coordenadas
+        const R = 6371; // Raio da Terra em km
+        const dLat = this.toRad(lat2 - lat1);
+        const dLon = this.toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distância em km
+    }
+
+    toRad(deg) {
+        return deg * (Math.PI / 180);
+    }
+
     filterByProximity(filter) {
-        console.log(`Filtering posts by: ${filter}`);
-        this.showNotification(`Mostrando posts: ${filter === 'all' ? 'Todos' : 'Próximos'}`, 'info');
+        console.log(`Filtering by: ${filter}`);
         
-        // Here you would implement the actual filtering logic
-        // For now, we'll just show a notification
-        if (filter === 'nearby') {
-            // Filter posts by proximity
-            this.renderPosts(this.posts.filter(post => post.distance && post.distance < 5));
+        const userLat = parseFloat(localStorage.getItem('userLatitude'));
+        const userLng = parseFloat(localStorage.getItem('userLongitude'));
+        
+        if (!userLat || !userLng) {
+            this.showNotification('Localização não disponível. Ative a localização no cadastro.', 'warning');
+            return;
+        }
+
+        let maxDistance;
+        switch(filter) {
+            case '5km':
+                maxDistance = 5;
+                break;
+            case '10km':
+                maxDistance = 10;
+                break;
+            case '25km':
+                maxDistance = 25;
+                break;
+            case '50km':
+                maxDistance = 50;
+                break;
+            case 'nearby':
+                maxDistance = 5;
+                break;
+            case 'all':
+            default:
+                maxDistance = null;
+                break;
+        }
+
+        if (maxDistance === null) {
+            // Mostrar todos os usuários
+            this.renderExploreUsers(this.exploreUsers);
+            this.showNotification('Mostrando todas as pessoas', 'info');
         } else {
-            // Show all posts
-            this.renderPosts(this.posts);
+            // Filtrar usuários por distância
+            const filteredUsers = this.exploreUsers.filter(user => {
+                if (!user.latitude || !user.longitude) return false;
+                const distance = this.calculateDistance(userLat, userLng, user.latitude, user.longitude);
+                user.distance = distance; // Adicionar distância ao objeto do usuário
+                return distance <= maxDistance;
+            });
+            
+            this.renderExploreUsers(filteredUsers);
+            this.showNotification(`${filteredUsers.length} pessoas encontradas em um raio de ${maxDistance}km`, 'success');
+        }
+        
+        // Atualizar o texto do botão dropdown
+        const dropdownBtn = document.getElementById('proximity-dropdown-btn');
+        const span = dropdownBtn.querySelector('span');
+        switch(filter) {
+            case '5km':
+                span.textContent = '5 km';
+                break;
+            case '10km':
+                span.textContent = '10 km';
+                break;
+            case '25km':
+                span.textContent = '25 km';
+                break;
+            case '50km':
+                span.textContent = '50 km';
+                break;
+            case 'nearby':
+                span.textContent = 'Próximos (5km)';
+                break;
+            case 'all':
+            default:
+                span.textContent = 'Todos';
+                break;
         }
     }
 
@@ -1773,7 +1858,86 @@ class FikahApp {
     }
 
     generateMockExploreUsers() {
-        return [];
+        return [
+            {
+                id: 1,
+                name: 'Ana Silva',
+                age: 25,
+                location: 'São Paulo, SP',
+                latitude: -23.5505,
+                longitude: -46.6333,
+                image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=400&fit=crop&crop=face',
+                interests: ['Música', 'Viagem', 'Fotografia'],
+                online: true,
+                liked: false,
+                distance: 2.5
+            },
+            {
+                id: 2,
+                name: 'Carla Santos',
+                age: 28,
+                location: 'Rio de Janeiro, RJ',
+                latitude: -22.9068,
+                longitude: -43.1729,
+                image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=400&fit=crop&crop=face',
+                interests: ['Arte', 'Culinária', 'Yoga'],
+                online: false,
+                liked: true,
+                distance: 8.2
+            },
+            {
+                id: 3,
+                name: 'Beatriz Costa',
+                age: 23,
+                location: 'Belo Horizonte, MG',
+                latitude: -19.9167,
+                longitude: -43.9345,
+                image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=400&fit=crop&crop=face',
+                interests: ['Dança', 'Cinema', 'Livros'],
+                online: true,
+                liked: false,
+                distance: 15.7
+            },
+            {
+                id: 4,
+                name: 'Daniela Lima',
+                age: 30,
+                location: 'Salvador, BA',
+                latitude: -12.9714,
+                longitude: -38.5014,
+                image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&h=400&fit=crop&crop=face',
+                interests: ['Praia', 'Música', 'Esportes'],
+                online: true,
+                liked: false,
+                distance: 25.3
+            },
+            {
+                id: 5,
+                name: 'Fernanda Oliveira',
+                age: 26,
+                location: 'Brasília, DF',
+                latitude: -15.7942,
+                longitude: -47.8822,
+                image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=400&fit=crop&crop=face',
+                interests: ['Política', 'Tecnologia', 'Café'],
+                online: false,
+                liked: false,
+                distance: 45.1
+            },
+            {
+                id: 6,
+                name: 'Gabriela Rocha',
+                age: 24,
+                location: 'Fortaleza, CE',
+                latitude: -3.7319,
+                longitude: -38.5267,
+                image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&h=400&fit=crop&crop=face',
+                interests: ['Praia', 'Forró', 'Artesanato'],
+                online: true,
+                liked: false,
+                distance: 65.8
+            }
+        ];
     }
 }
 

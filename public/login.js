@@ -51,8 +51,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`)
                             .then(response => response.json())
                             .then(data => {
-                                const city = data.address.city || data.address.town || data.address.village || '';
-                                const state = data.address.state || '';
+                                // Tentar obter cidade de vários campos possíveis
+                                const city = data.address.city || 
+                                           data.address.town || 
+                                           data.address.village || 
+                                           data.address.municipality || 
+                                           data.address.county || 
+                                           data.address.suburb ||
+                                           data.address.neighbourhood ||
+                                           data.address.hamlet ||
+                                           data.display_name?.split(',')[0] || '';
+                                           
+                                const state = data.address.state || data.address.region || '';
+                                
+                                // Salvar coordenadas para uso posterior no filtro de proximidade
+                                localStorage.setItem('userLatitude', lat);
+                                localStorage.setItem('userLongitude', lng);
+                                
                                 locationInput.value = city + (state ? ', ' + state : '');
                                 getLocationBtn.textContent = 'Localização obtida!';
                                 setTimeout(() => {
