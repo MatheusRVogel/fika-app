@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.notifications.success('Login realizado com sucesso!');
                     }
                     
-                    window.location.href = '/';
+                    window.location.href = '/app';
                 }
             } catch (error) {
                 console.error('Erro no login:', error);
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('Cadastro realizado com sucesso! Bem-vindo ao Fikah!');
                     }
                     
-                    window.location.href = '/';
+                    window.location.href = '/app';
                 }
             } catch (error) {
                 console.error('Erro no cadastro:', error);
